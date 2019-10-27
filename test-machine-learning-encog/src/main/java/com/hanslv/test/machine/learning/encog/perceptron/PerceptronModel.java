@@ -148,7 +148,7 @@ public class PerceptronModel {
 		/*
 		 * 通过RPROP算法对当前模型进行训练
 		 */
-		final ResilientPropagation tranAlgorithm = new ResilientPropagation(perceptronNetwork , trainSet);
+		final ResilientPropagation trianAlgorithm = new ResilientPropagation(perceptronNetwork , trainSet);
 		
 		/*
 		 * 记录迭代纪元
@@ -160,15 +160,15 @@ public class PerceptronModel {
 		 * 当误差大于误差限制时执行while
 		 */
 		do {
-			tranAlgorithm.iteration();
-			System.out.println("当前纪元：" + epoch + "误差为：" + tranAlgorithm.getError());
+			trianAlgorithm.iteration();
+			System.out.println("当前纪元：" + epoch + "误差为：" + trianAlgorithm.getError());
 			epoch++;
-		}while(tranAlgorithm.getError() > errorLimit);
+		}while(trianAlgorithm.getError() > errorLimit);
 		
 		/*
 		 * 结束训练
 		 */
-		tranAlgorithm.finishTraining();
+		trianAlgorithm.finishTraining();
 		
 		
 		/*
