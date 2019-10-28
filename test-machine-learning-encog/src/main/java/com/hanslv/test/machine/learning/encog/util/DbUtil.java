@@ -19,21 +19,61 @@ public class DbUtil {
 	 * @param limit
 	 * @return
 	 */
-	public static List<List<String>> getDataAndVolumeMap(String stockId , String startDate , String limit){
+	public static List<List<String>> getDataAndVolumeMap(String stockId , String startDate , Integer limit){
 		List<List<String>> dateVolumeList = new ArrayList<>();
 		List<String> dateList = new ArrayList<>();
 		List<String> volumeList = new ArrayList<>();
-		String sql = "SELECT stock_price_date , stock_price_volume FROM tab_stock_price WHERE stockId = ? AND stock_price_date > ? LIMIT ?";
+		
+		
+		/*
+		 * 添加表头
+		 */
+		String dateTitle = "\"stockPriceDate\"";
+		String volumeTitle = "\"stockPriceVolume\"";
+		dateList.add(dateTitle);
+		volumeList.add(volumeTitle);
+		
+		
+//		String sql = "SELECT stock_price_date , stock_price_volume FROM tab_stock_price WHERE stockId = ? AND stock_price_date > ? LIMIT ?";
+		String sql = 
+		"SELECT stock_price_date , stock_price_volume " + 
+		"FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date >= ?" + 
+		"UNION " + 
+		"SELECT stock_price_date , stock_price_volume " +  
+		"FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date >= ?" + 
+		"UNION " + 
+		"SELECT stock_price_date , stock_price_volume " +  
+		"FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date >= ?" + 
+		"UNION " + 
+		"SELECT stock_price_date , stock_price_volume " +  
+		"FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date >= ?" + 
+		"UNION " + 
+		"SELECT stock_price_date , stock_price_volume " +  
+		"FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date >= ?" + 
+		"UNION " + 
+		"SELECT stock_price_date , stock_price_volume " +  
+		"FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date >= ?" + 
+		"ORDER BY stock_price_date ASC LIMIT ?";
 		
 		try(PreparedStatement pstmt = JdbcUtil.getJdbcConnection().prepareStatement(sql);){
 			pstmt.setString(1 , stockId);
 			pstmt.setString(2 , startDate);
-			pstmt.setString(3 , limit);
+			pstmt.setString(3 , stockId);
+			pstmt.setString(4 , startDate);
+			pstmt.setString(5 , stockId);
+			pstmt.setString(6 , startDate);
+			pstmt.setString(7 , stockId);
+			pstmt.setString(8 , startDate);
+			pstmt.setString(9 , stockId);
+			pstmt.setString(10 , startDate);
+			pstmt.setString(11 , stockId);
+			pstmt.setString(12 , startDate);
+			pstmt.setInt(13 , limit);
 			try(ResultSet resultSet = pstmt.executeQuery();){
 				while(resultSet.next()) {
 					String date = resultSet.getString(1);
 					String volume = resultSet.getString(2);
-					dateList.add(date);
+					dateList.add(date.replaceAll("-" , ""));
 					volumeList.add(volume);
 				}
 				dateVolumeList.add(dateList);

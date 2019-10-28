@@ -6,10 +6,10 @@ import java.util.List;
 import com.hanslv.test.machine.learning.encog.util.SourceDataParser;
 
 public class TestParseRawData {
-	static String title = "test1,test2,test3,stest4,stest5,setest6,setest7";
-	static String data1 = "test,test,test,stest,stest,setest,setest";
-	static String data2 = "test,test,test,stest,stest,setest,setest";
-	static String data3 = "test,test,test,stest,stest,setest,setest";
+	static String title = "test1";
+	static String data1 = "23";
+	static String data2 = "56";
+	static String data3 = "78";
 	
 	static String filePath = "test-file";
 	
