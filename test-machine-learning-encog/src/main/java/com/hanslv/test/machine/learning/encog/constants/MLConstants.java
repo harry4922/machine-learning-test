@@ -16,19 +16,35 @@ import java.io.File;
  */
 public abstract class MLConstants {
 	public static final String RAW_DATA_FILE_PATH = 
-			"E:" + File.separator + 
-			"Java" + File.separator + 
+//			"E:" + File.separator + 
+//			"Java" + File.separator + 
+//			"eclipse" + File.separator + 
+//			"machine-learning-test" + File.separator + 
+//			"dataFiles" + File.separator + 
+			
+			"D:" + File.separator + 
+			"data" + File.separator + 
 			"eclipse" + File.separator + 
+			"workplace" + File.separator + 
+			"test-maschinelles-lernen" + File.separator + 
 			"machine-learning-test" + File.separator + 
 			"dataFiles" + File.separator + 
 			"machine-learning-raw-data" + File.separator;//非标准化神经元输入数据文件根路径
-	public static final String RAW_DATA_FILE_NAME_SUFFIX = "_raw";//非标准化神经元输入数据文件名称后缀
+	public static final String RAW_DATA_FILE_NAME_SUFFIX = "4raw";//非标准化神经元输入数据文件名称后缀
 	
 	
 	public static final String DATA_FILE_PATH = 
-			"E:" + File.separator + 
-			"Java" + File.separator + 
+//			"E:" + File.separator + 
+//			"Java" + File.separator + 
+//			"eclipse" + File.separator + 
+//			"machine-learning-test" + File.separator + 
+//			"dataFiles" + File.separator + 
+			
+			"D:" + File.separator + 
+			"data" + File.separator + 
 			"eclipse" + File.separator + 
+			"workplace" + File.separator + 
+			"test-maschinelles-lernen" + File.separator + 
 			"machine-learning-test" + File.separator + 
 			"dataFiles" + File.separator + 
 			"machine-learning-data" + File.separator;//标准化神经元输入数据文件根路径

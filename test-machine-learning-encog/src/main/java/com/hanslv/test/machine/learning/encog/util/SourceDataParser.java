@@ -1,20 +1,17 @@
 package com.hanslv.test.machine.learning.encog.util;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.encog.app.analyst.AnalystFileFormat;
 import org.encog.app.analyst.EncogAnalyst;
 import org.encog.app.analyst.csv.normalize.AnalystNormalizeCSV;
 import org.encog.app.analyst.wizard.AnalystWizard;
+import org.encog.ml.data.specific.CSVNeuralDataSet;
 import org.encog.util.csv.CSVFormat;
 
 import com.hanslv.test.machine.learning.encog.constants.MLConstants;
@@ -30,46 +27,19 @@ import com.hanslv.test.machine.learning.encog.constants.MLConstants;
  */
 public class SourceDataParser {
 	
+
 	/**
 	 * 1、获取标准化的数据
 	 * @param filePath 标准化文件路径，会同时生成raw文件，在使用前需要先创建MLConstants.RAW_DATA_FILE_PATH对应文件夹
 	 * @param objectStringList
-	 * @return 返回double[][]
+	 * @param inputSize
+	 * @param idealOutputSize
+	 * @param headers
+	 * @return
 	 */
-	public static double[][] dataAnalyze(String filePath , List<String> objectStringList){
-		List<double[]> analyzedDataList = new ArrayList<>();
-		try(FileInputStream fileInputStream = new FileInputStream(parseRawData(filePath , objectStringList));
-				InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream , "UTF-8");
-				BufferedReader bufferedReader = new BufferedReader(inputStreamReader);){
-			/*
-			 * 跳过表头
-			 */
-			bufferedReader.readLine();
-			
-			/*
-			 * 遍历读取标准化后的数据
-			 */
-			String dataLine = null;
-			while((dataLine = bufferedReader.readLine()) != null) {
-				String[] dataArray = dataLine.split(",");
-				double[] dataDoubleArray = new double[dataArray.length];
-				/*
-				 * 将数据转换为double数组
-				 */
-				for(int i = 0 ; i < dataArray.length ; i++) dataDoubleArray[i] = new Double(dataArray[i]);
-				
-				/*
-				 * 放入List
-				 */
-				analyzedDataList.add(dataDoubleArray);
-			}
-		}catch(IOException e) {
-			e.printStackTrace();
-			System.err.println("数据解析错误");
-			return null;
-		}
-		
-		return analyzedDataList.stream().toArray(double[][] :: new);
+	public static CSVNeuralDataSet dataAnalyze(String filePath , List<String> objectStringList , int inputSize , int idealOutputSize , boolean headers){
+		String dataFilePath = parseRawData(filePath , objectStringList);
+		return new CSVNeuralDataSet(dataFilePath , inputSize , idealOutputSize , headers);
 	}
 	
 	
@@ -100,7 +70,7 @@ public class SourceDataParser {
 	 * 
 	 * 在调用前需要先在系统中创建MLConstants.RAW_DATA_FILE_PATH对应文件夹
 	 * 
-	 * @param filePath 文件名称，创建后的文件名称会添加_raw后缀
+	 * @param filePath 文件名称，创建后的文件名称会添加4raw后缀
 	 * @param objectStringList 非标准化输入数据List，数据需要符合CSV文件格式(以,分隔每个属性)
 	 * @return 返回创建后的文件全路径
 	 */
@@ -154,27 +124,27 @@ public class SourceDataParser {
 	 * @param filePath 目标文件名称
 	 * @param objectStringList 非标准化数据List，第一列包含表头
 	 */
-	private static File parseRawData(String filePath , List<String> objectStringList) {
+	private static String parseRawData(String filePath , List<String> objectStringList) {
 		/*
 		 * 非标准化数据文件
 		 */
 		File rawDataFile = new File(writeRawToCSV(filePath , objectStringList));
 		
 		/*
-		 * 标准化数据文件
+		 * 标准化数据文件路径
 		 */
-		File dataFile = new File(MLConstants.DATA_FILE_PATH + filePath);
+		String dataFilePath = MLConstants.DATA_FILE_PATH + filePath + MLConstants.DATA_FILE_TYPE;
 
 		/*
 		 * 实例化Encog Analyst Script脚本运行器
 		 */
 		EncogAnalyst analyst = new EncogAnalyst();
 		
+		
 		/*
 		 * 实例化CSV分析器
 		 */
 		AnalystWizard wizard = new AnalystWizard(analyst);
-		
 		
 		/*
 		 * 执行Encog Analyst Script，分析非标准化数据文件
@@ -187,8 +157,8 @@ public class SourceDataParser {
 		final AnalystNormalizeCSV normalizer = new AnalystNormalizeCSV();
 		normalizer.analyze(rawDataFile , true , CSVFormat.ENGLISH , analyst);
 		normalizer.setProduceOutputHeaders(true);
-		normalizer.normalize(dataFile);
+		normalizer.normalize(new File(dataFilePath));
 		
-		return dataFile;
+		return dataFilePath;
 	}
 }

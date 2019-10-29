@@ -19,19 +19,15 @@ public class DbUtil {
 	 * @param limit
 	 * @return
 	 */
-	public static List<List<String>> getDataAndVolumeMap(String stockId , String startDate , Integer limit){
-		List<List<String>> dateVolumeList = new ArrayList<>();
-		List<String> dateList = new ArrayList<>();
-		List<String> volumeList = new ArrayList<>();
+	public static List<String> getDataAndVolumeMap(String stockId , String startDate , Integer limit){
+		List<String> dataList = new ArrayList<>();
 		
 		
 		/*
 		 * 添加表头
 		 */
-		String dateTitle = "\"stockPriceDate\"";
-		String volumeTitle = "\"stockPriceVolume\"";
-		dateList.add(dateTitle);
-		volumeList.add(volumeTitle);
+		String dataTitle = "year,month,day,stockPriceVolume";
+		dataList.add(dataTitle);
 		
 		
 //		String sql = "SELECT stock_price_date , stock_price_volume FROM tab_stock_price WHERE stockId = ? AND stock_price_date > ? LIMIT ?";
@@ -71,19 +67,17 @@ public class DbUtil {
 			pstmt.setInt(13 , limit);
 			try(ResultSet resultSet = pstmt.executeQuery();){
 				while(resultSet.next()) {
-					String date = resultSet.getString(1);
+					String date[] = resultSet.getString(1).split("-");
 					String volume = resultSet.getString(2);
-					dateList.add(date.replaceAll("-" , ""));
-					volumeList.add(volume);
+					String dataStr = date[0] + "," + Integer.parseInt(date[1]) + "," + Integer.parseInt(date[2]) + "," + volume;
+					dataList.add(dataStr);
 				}
-				dateVolumeList.add(dateList);
-				dateVolumeList.add(volumeList);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}finally {
 			JdbcUtil.closeJdbcConnection();
 		}
-		return dateVolumeList;
+		return dataList;
 	} 
 }
