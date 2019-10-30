@@ -176,4 +176,62 @@ public class PerceptronModel {
 		 */
 		return perceptronNetwork;
 	}
+	
+	
+	/**
+	 * 传入MLDataSet
+	 * @param trainData
+	 * @param errorLimit
+	 * @return
+	 */
+	public static BasicNetwork train(MLDataSet trainData , double errorLimit) {
+		/*
+		 * 构建感知机前馈神经网络模型
+		 */
+		BasicNetwork perceptronNetwork = new BasicNetwork();
+		perceptronNetwork.addLayer(new BasicLayer(null , true , 2));
+//		perceptronNetwork.addLayer(new BasicLayer(new ActivationReLU() , true , 5));
+		perceptronNetwork.addLayer(new BasicLayer(new ActivationSigmoid() , true , 5));
+		perceptronNetwork.addLayer(new BasicLayer(new ActivationSigmoid() , false , 1));
+		/*
+		 * 表示层次构建完毕
+		 */
+		perceptronNetwork.getStructure().finalizeStructure();
+		
+		/*
+		 * 重置偏置神经元、神经元连接权限值，使用Nguyen-Widrow为其设置随机值
+		 */
+		perceptronNetwork.reset();
+		
+		/*
+		 * 通过RPROP算法对当前模型进行训练
+		 */
+		final ResilientPropagation trianAlgorithm = new ResilientPropagation(perceptronNetwork , trainData);
+		
+		/*
+		 * 记录迭代纪元
+		 */
+		int epoch = 0;
+		
+		/*
+		 * 根据初始化样本迭代训练当前模型
+		 * 当误差大于误差限制时执行while
+		 */
+		do {
+			trianAlgorithm.iteration();
+			System.out.println("当前纪元：" + epoch + "误差为：" + trianAlgorithm.getError());
+			epoch++;
+		}while(trianAlgorithm.getError() > errorLimit);
+		
+		/*
+		 * 结束训练
+		 */
+		trianAlgorithm.finishTraining();
+		
+		
+		/*
+		 * 返回训练后的模型
+		 */
+		return perceptronNetwork;
+	}
 }

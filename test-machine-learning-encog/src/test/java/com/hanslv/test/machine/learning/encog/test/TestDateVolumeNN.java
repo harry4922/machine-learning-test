@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.encog.ml.data.MLDataPair;
+import org.encog.ml.data.MLDataSet;
 import org.encog.ml.data.basic.BasicMLData;
-import org.encog.ml.data.specific.CSVNeuralDataSet;
 import org.encog.neural.networks.BasicNetwork;
 
 import com.hanslv.test.machine.learning.encog.stock.DateVolumeNN;
@@ -16,6 +16,8 @@ public class TestDateVolumeNN {
 	public static void main(String[] args) {
 		String startDate = "2019-07-26";
 		String stockId = "1";
+		String titles = "year,month,day,stockPriceVolume";
+		
 		/*
 		 * 获取20天数据
 		 */
@@ -24,7 +26,7 @@ public class TestDateVolumeNN {
 		/*
 		 * 算法训练数据
 		 */
-		CSVNeuralDataSet trainData = SourceDataParser.dataAnalyze("1,2019-07-26(test)", daysData20 , 3 , 1 , true);
+		MLDataSet trainData = SourceDataParser.dataAnalyze(daysData20 , titles.split(",") , 1 , 0.9 , -0.9);
 		
 		
 		/*
@@ -36,7 +38,7 @@ public class TestDateVolumeNN {
 		Integer day = Integer.parseInt(dateStr[2]);
 		String nextDate = LocalDate.of(year , month , day).plusDays(1).toString();
 		List<String> daysData5 = DbUtil.getDataAndVolumeMap(stockId , nextDate , 5);
-		CSVNeuralDataSet checkData = SourceDataParser.dataAnalyze("1," + nextDate + "(test)" , daysData5 , 3 , 1 , true);
+		MLDataSet checkData = SourceDataParser.dataAnalyze(daysData5 , titles.split(",") , 1 , 0.9 , -0.9);
 		
 		/*
 		 * 训练算法

@@ -1,7 +1,11 @@
 package com.hanslv.test.machine.learning.encog.test;
 
-import org.encog.util.arrayutil.NormalizationAction;
-import org.encog.util.arrayutil.NormalizedField;
+import java.util.ArrayList;
+import java.util.List;
+import org.encog.ml.data.MLDataPair;
+import org.encog.ml.data.basic.BasicMLData;
+
+import com.hanslv.test.machine.learning.encog.util.SourceDataParser;
 
 public class TestParseRawData {
 	static String title = "testa,testb,testc,testd,teste";
@@ -40,24 +44,21 @@ public class TestParseRawData {
 //	static String data3 = "3.0 , 4.0 , 5.0 , 7.0 , 8.0";
 //	static String data4 = "4.0 , 5.0 , 6.0 , 8.0 , 9.0";
 	
-	static String filePath = "testfile";
-	
 	public static void main(String[] args) {
-//		List<String> rawDataList = new ArrayList<>();
-//		rawDataList.add(title);
-//		rawDataList.add(data1);
-//		rawDataList.add(data2);
-//		rawDataList.add(data3);
-//		rawDataList.add(data4);
-//		
-//		for(MLDataPair checkDataPair : SourceDataParser.dataAnalyze(filePath, rawDataList , 4 , 1 , true)) {
-//			BasicMLData input = new BasicMLData(checkDataPair.getInput());
-//			BasicMLData output = new BasicMLData(checkDataPair.getIdeal());
-//			System.out.println("输入：" + input.toString() + ";" + "输出：" + output.toString());
-//		}
+		List<String> rawDataList = new ArrayList<>();
+		rawDataList.add(data1);
+		rawDataList.add(data2);
+		rawDataList.add(data3);
+		rawDataList.add(data4);
+		
+		for(MLDataPair checkDataPair : SourceDataParser.dataAnalyze(rawDataList , title.split(",") , 1 , 0.9 , -0.9)) {
+			BasicMLData input = new BasicMLData(checkDataPair.getInput());
+			BasicMLData output = new BasicMLData(checkDataPair.getIdeal());
+			System.out.println("输入：" + input.toString() + ";" + "输出：" + output.toString());
+		}
 		
 		
-		NormalizedField fuelStats = new NormalizedField(NormalizationAction.Normalize , "test", 200 , 0 , -0.9 , 0.9) ;
-		System.out.println(fuelStats.normalize(99));
+//		NormalizedField fuelStats = new NormalizedField(NormalizationAction.Normalize , "test", 5 , 0 , -0.9 , 0.9) ;
+//		System.out.println(fuelStats.normalize(2));
 	}
 }

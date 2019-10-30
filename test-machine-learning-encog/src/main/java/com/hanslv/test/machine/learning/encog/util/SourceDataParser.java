@@ -13,9 +13,7 @@ import org.encog.app.analyst.AnalystFileFormat;
 import org.encog.app.analyst.EncogAnalyst;
 import org.encog.app.analyst.csv.normalize.AnalystNormalizeCSV;
 import org.encog.app.analyst.wizard.AnalystWizard;
-import org.encog.ml.data.MLData;
 import org.encog.ml.data.MLDataSet;
-import org.encog.ml.data.basic.BasicMLData;
 import org.encog.ml.data.basic.BasicMLDataSet;
 import org.encog.ml.data.specific.CSVNeuralDataSet;
 import org.encog.util.arrayutil.NormalizationAction;
@@ -28,14 +26,131 @@ import com.hanslv.test.machine.learning.encog.constants.MLConstants;
  * 数据源信息格式化工具类
  * 
  * ----------------------------------------------------
- * 1、获取标准化的数据										public static double[][] dataAnalyze(String filePath , List<String> objectStringList)
+ * 1、获取标准化的数据						public static MLDataSet dataAnalyze(List<String> objectStringList , String[] fieldNames , int targetColumnLength , double normalizedH , double normalizedL)
  * ----------------------------------------------------
  * @author hanslv
  *
  */
 public class SourceDataParser {
-	
 
+
+	/**
+	 * 1、获取标准化的数据
+	 * @param objectStringList 非标准化数据集合，需要将idealOutput字段放在后边，只可传入数字格式的字符串
+	 * @param fieldNames 字段名称数组
+	 * @param normalizedH 标准化后的最大值
+	 * @param normalizedL 标准化后的最小值
+	 * @param targetColumnLength idealOutput字段数量
+	 * @return
+	 */
+	public static MLDataSet dataAnalyze(List<String> objectStringList , String[] fieldNames , int targetColumnLength , double normalizedH , double normalizedL) {
+		/*
+		 * 标准化后的输入样本数组和预测输出样本数组
+		 */
+		double[][] inputArray = new double[objectStringList.size()][];
+		double[][] idealOutputArray = new double[objectStringList.size()][];
+		
+		/*
+		 * 存放每个字段的NormalizedField对象，key=字段名称  value=对应的NormalizedField对象
+		 */
+		Map<String , NormalizedField> normalizedFieldMap = new HashMap<>();
+		for(String fieldName : fieldNames) {
+			NormalizedField currentNormalizedField = new NormalizedField(NormalizationAction.Normalize , fieldName , Integer.MIN_VALUE , Integer.MAX_VALUE , normalizedH , normalizedL);
+			normalizedFieldMap.put(fieldName , currentNormalizedField);
+		}
+		
+		/*
+		 * 遍历数据List
+		 */
+		for(int i = 0 ; i < objectStringList.size() ; i++) {
+			String[] objectStringArray = objectStringList.get(i).split(",");
+			
+			/*
+			 * 遍历每条数据字符串中的每个字段，
+			 * 更新当前NormalizedField的最大值和最小值
+			 */
+			for(int j = 0 ; j < objectStringArray.length ; j++) {
+				/*
+				 * 当前字段分析器
+				 */
+				NormalizedField currentNormalizedField = normalizedFieldMap.get(fieldNames[j]);
+				Double currentVal = new Double(objectStringArray[j].trim());
+				if(currentNormalizedField.getActualHigh() < currentVal) currentNormalizedField.setActualHigh(currentVal);
+				if(currentNormalizedField.getActualLow() > currentVal) currentNormalizedField.setActualLow(currentVal);
+			}
+		}
+		
+		
+		for(int i = 0 ; i < objectStringList.size() ; i++) {
+			String[] objectStringArray = objectStringList.get(i).split(",");
+			
+			/*
+			 * 本条数据输入样本数据数组
+			 */
+			double[] currentInputDataArray = new double[fieldNames.length - targetColumnLength];
+			
+			/*
+			 * 本条数据预测输出样本数据数组
+			 */
+			double[] currentIdealOutputArray = new double[targetColumnLength];
+			
+			/*
+			 * 获取标准化后的训练数据
+			 */
+			for(int j = 0 ; j < objectStringArray.length ; j++) {
+				NormalizedField currentNormalizedField = normalizedFieldMap.get(fieldNames[j]);
+				
+				/*
+				 * 判断当前数据是输入还是预测输出
+				 * 本条数据列下标小于全部数据列数量-输出数据列数量
+				 */
+				if(j < (fieldNames.length - targetColumnLength)) currentInputDataArray[j] = currentNormalizedField.normalize(new Double(objectStringArray[j].trim()));
+				else currentIdealOutputArray[j - fieldNames.length + targetColumnLength] = currentNormalizedField.normalize(new Double(objectStringArray[j].trim()));
+				
+			}
+			
+			/*
+			 * 将本条数据添加到汇总数组中
+			 */
+			inputArray[i] = currentInputDataArray;
+			idealOutputArray[i] = currentIdealOutputArray;
+		}
+		
+		return new BasicMLDataSet(inputArray , idealOutputArray);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 *
 	 * @param filePath 标准化文件路径，会同时生成raw文件，在使用前需要先创建MLConstants.RAW_DATA_FILE_PATH对应文件夹
@@ -50,66 +165,6 @@ public class SourceDataParser {
 		String dataFilePath = parseRawData(filePath , objectStringList);
 		return new CSVNeuralDataSet(dataFilePath , inputSize , idealOutputSize , headers);
 	}
-	
-	
-	public static MLDataSet dataAnalyze(List<String> objectStringList , String[] fieldNames , int rangeStart , int rangeEnd) {
-		/*
-		 * 返回的结果集合
-		 */
-		BasicMLDataSet paredDataSet = new BasicMLDataSet();
-		
-		/*
-		 * 存放每个字段的NormalizedField对象，key=字段名称  value=对应的NormalizedField对象
-		 */
-		Map<String , NormalizedField> normalizedFieldMap = new HashMap<>();
-		for(String fieldName : fieldNames) {
-			NormalizedField currentNormalizedField = new NormalizedField();
-			currentNormalizedField.setAction(NormalizationAction.Normalize);
-			currentNormalizedField.setNormalizedHigh(0.9);
-			currentNormalizedField.setNormalizedLow(-0.9);
-			normalizedFieldMap.put(fieldName , currentNormalizedField);
-		}
-		
-		/*
-		 * 遍历数据List
-		 */
-		for(String objectString : objectStringList) {
-			String[] objectStringArray = objectString.split(",");
-			/*
-			 * 遍历每条数据字符串中的每个字段，
-			 * 与当前NormalizedField对象中最大值对比
-			 */
-			for(int i = 0 ; i < objectStringArray.length ; i++) {
-				/*
-				 * 当前字段分析器
-				 */
-				NormalizedField currentNormalizedField = normalizedFieldMap.get(fieldNames[i]);
-				Double currentVal = new Double(objectStringArray[i]);
-				if(currentNormalizedField.getActualHigh() < currentVal) currentNormalizedField.setActualHigh(currentVal);
-				if(currentNormalizedField.getActualLow() > currentVal) currentNormalizedField.setActualLow(currentVal);
-			}
-		}
-		
-		return paredDataSet;
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	
 	

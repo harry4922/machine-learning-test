@@ -22,14 +22,6 @@ public class DbUtil {
 	public static List<String> getDataAndVolumeMap(String stockId , String startDate , Integer limit){
 		List<String> dataList = new ArrayList<>();
 		
-		
-		/*
-		 * 添加表头
-		 */
-		String dataTitle = "year,month,day,stockPriceVolume";
-		dataList.add(dataTitle);
-		
-		
 //		String sql = "SELECT stock_price_date , stock_price_volume FROM tab_stock_price WHERE stockId = ? AND stock_price_date > ? LIMIT ?";
 		String sql = 
 		"SELECT stock_price_date , stock_price_volume " + 
