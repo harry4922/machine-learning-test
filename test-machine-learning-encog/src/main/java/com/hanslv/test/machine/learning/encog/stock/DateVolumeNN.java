@@ -10,10 +10,10 @@ import org.encog.neural.networks.training.pso.NeuralPSO;
  * 股票日期-成交量训练模型
  * 
  * 1、输入层设计
- * 输入样本集包括股票日期年、月、日共三个神经元
+ * 输入样本集包括股票日期年、月、日共3个神经元
  * 设置偏置单元使决策线可从原点偏移
  * 2、隐藏层设计
- * 由于输入层神经元数量为1，根据设计合理性推断隐藏层各层神经元数量为2n+1=10，因此每层设置10个神经元
+ * 由于输入层神经元数量为1，根据设计合理性推断隐藏层各层神经元数量为2n+1=7，因此每层设置7个神经元
  * 根据测试逐渐调整隐藏层层数得出计算时间和计算精度的最佳组合，结果为2
  * 设置偏置单元使决策线可从原点偏移
  * 考虑到输出为(-1,1)区间，因此采用常用的tanh函数为激活函数
@@ -58,13 +58,14 @@ public class DateVolumeNN {
 		/*
 		 * 输入层结构
 		 */
-		dataAndVolumeMode.addLayer(new BasicLayer(null , true , 3));
+		dataAndVolumeMode.addLayer(new BasicLayer(null , true , 1));
 		
 		/*
 		 * 隐藏层结构
 		 */
-		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationTANH() , true , 10));
-		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationTANH() , true , 10));
+		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationTANH() , true , 5));
+		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationTANH() , true , 5));
+		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationTANH() , true , 5));
 		
 		/*
 		 * 输出层结构

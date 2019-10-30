@@ -34,6 +34,11 @@ public class TestParseRawData {
 //	static String data3 = "3.0 , 4.0 , 5.0 , Iris-setosc , 7.0";
 //	static String data4 = "4.0 , 5.0 , 6.0 , Iris-setosd , 8.0";
 	
+//	static String data1 = "1.0 , 2.0 , 3.0 , 1 , 5.0";
+//	static String data2 = "2.0 , 3.0 , 4.0 , 1 , 6.0";
+//	static String data3 = "3.0 , 4.0 , 5.0 , 1 , 7.0";
+//	static String data4 = "4.0 , 5.0 , 6.0 , 1 , 8.0";
+	
 	static String data1 = "1.0 , 2.0 , 3.0 , 1 , 5.0";
 	static String data2 = "2.0 , 3.0 , 4.0 , 2 , 6.0";
 	static String data3 = "3.0 , 4.0 , 5.0 , 3 , 7.0";
@@ -58,7 +63,7 @@ public class TestParseRawData {
 		}
 		
 		
-//		NormalizedField fuelStats = new NormalizedField(NormalizationAction.Normalize , "test", 5 , 0 , -0.9 , 0.9) ;
-//		System.out.println(fuelStats.normalize(2));
+//		NormalizedField fuelStats = new NormalizedField(NormalizationAction.Normalize , "test", 1.001 , 0.999 , -0.9 , 0.9) ;
+//		System.out.println(fuelStats.normalize(1));
 	}
 }
