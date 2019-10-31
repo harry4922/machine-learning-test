@@ -14,7 +14,7 @@ import com.hanslv.test.machine.learning.encog.perceptron.PerceptronModel;
 public class TestPerceptronModel {
 	static double[][] inputData = {{ 0.0, 0.0 }, { 1.0, 0.0 },{ 0.0, 1.0 }, { 1.0, 1.0 }};
 	static double[][] idealOutputData = {{ 0.0 }, { 1.0 }, { 1.0 }, { 0.0 }};
-	static double errorLimit = 0.01;
+	static double errorLimit = 0.0001;
 	
 	static double[] testData1 = {0.0, 0.0};
 	static double testData1IdealOutput = 0.0;

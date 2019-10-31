@@ -1,4 +1,4 @@
-package com.hanslv.test.machine.learning.encog.test;
+package com.hanslv.test.machine.learning.encog.stock;
 
 import java.util.List;
 
@@ -9,29 +9,38 @@ import org.encog.ml.data.basic.BasicMLData;
 import org.encog.ml.data.basic.BasicMLDataSet;
 import org.encog.neural.networks.BasicNetwork;
 
-import com.hanslv.test.machine.learning.encog.stock.DateVolumeNN;
 import com.hanslv.test.machine.learning.encog.util.DbUtil;
 import com.hanslv.test.machine.learning.encog.util.SourceDataParser;
 
-public class TestDateVolumeNN {
-	public static void main(String[] args) {
-//		loop1:for(int j = 0 ; j <= 3555 ; j++) {
-		loop1:for(int j = 18 ; j < 3555 ; j++) {
-			String startDate = "2019-07-26";
-			String stockId = j + "";
-	//		String titles = "year,month,day,stockPriceVolume";
-			String titles = "date,stockPriceVolume";
-			int trainDataSize = 45;
-			int checkDataSize = 5;
+/**
+ * 训练股票日期-成交量模型
+ * @author hanslv
+ *
+ */
+public class DateVolumeNNTrainer {
+	public static boolean trainNN(String stockId , String startDate , int checkDataSize , double limit) {
+		String titles = "date,stockPriceVolume";
+		String algorithmFileSuffix = "date_volume.eg";
+		String basePath = "test/";
+		String algorithmFilePath = basePath + stockId + "_" + algorithmFileSuffix;
+		
+		/*
+		 * 初始训练时间为200天，每次迭代增加50天直到当前ID的全部数据用完或找出最佳模型
+		 */
+		loop1:for(int trainDataSize = 200 ; trainDataSize < Integer.MAX_VALUE ; trainDataSize = trainDataSize + 50) {
+			
 			
 			/*
 			 * 获取股票数据
 			 */
 			List<String> mainDataList = DbUtil.getDataAndVolumeMap(stockId, startDate, trainDataSize + checkDataSize);
 			
+			/*
+			 * 数据已经全部用完，没有找到合适模型
+			 */
 			if(mainDataList.size() < trainDataSize + checkDataSize) {
 				System.err.println("数据样本集小于预期");
-				continue;
+				return false;
 			}
 	
 			/*
@@ -41,26 +50,18 @@ public class TestDateVolumeNN {
 			MLDataSet trainData = new BasicMLDataSet();
 			MLDataSet checkData = new BasicMLDataSet();
 			
+			/*
+			 * 将样本拆分为训练数据和对比数据
+			 */
 			for(int i = 0 ; i < mainData.size() ; i++) {
 				if(i < trainDataSize) trainData.add(mainData.get(i));
 				else checkData.add(mainData.get(i));
 			}
 			
 			/*
-			 * 5天验证数据
-			 */
-	//		String dateStr = daysData20.get(daysData20.size() - 1);
-	//		Integer year = Integer.parseInt(dateStr.substring(0 , 4));
-	//		Integer month = Integer.parseInt(dateStr.substring(4 , 6));
-	//		Integer day = Integer.parseInt(dateStr.substring(6 , 8));
-	//		String nextDate = LocalDate.of(year , month , day).plusDays(1).toString();
-	//		List<String> daysData5 = DbUtil.getDataAndVolumeMap(stockId , nextDate , 5);
-	//		MLDataSet checkData = SourceDataParser.dataAnalyze(daysData5 , titles.split(",") , 1 , 0.9 , -0.9);
-			
-			/*
 			 * 训练算法
 			 */
-			BasicNetwork algorithmModel = DateVolumeNN.train(trainData , 0.005);
+			BasicNetwork algorithmModel = DateVolumeNN.train(trainData , limit);
 			
 			/*
 			 * 收敛失败
@@ -70,30 +71,18 @@ public class TestDateVolumeNN {
 				Encog.getInstance().shutdown();
 				continue;
 			}
-//			else System.out.println("收敛成功！" + stockId);
-			
 			
 			/*
-			 * 输出结果
+			 * 判断结果是否符合预期
 			 */
 			for(MLDataPair checkDataPair : checkData) {
 				BasicMLData checkInput = new BasicMLData(checkDataPair.getInput());
-//				System.out.println("--------------------------------");
-//				System.out.println("输入：");
-//				System.out.println(checkInput.toString());
-//				System.out.println("预测输出：");
-				
 				BasicMLData checkOutput = new BasicMLData(checkDataPair.getIdeal());
-				
-//				System.out.println(checkOutput.toString());
 				
 				/*
 				 * 执行算法
 				 */
 				BasicMLData output = new BasicMLData(algorithmModel.compute(checkInput));
-				
-//				System.out.println("实际输出：");
-//				System.out.println(output.toString());
 				
 				if(SourceDataParser.check(checkOutput , output , 0.1)) {
 					Encog.getInstance().shutdown();
@@ -101,8 +90,15 @@ public class TestDateVolumeNN {
 					continue loop1;
 				}
 			}
+			
+			/*
+			 * 预测成功保存算法到文件
+			 */
+			SourceDataParser.saveAlgorithm(algorithmFilePath , algorithmModel);
 			System.out.println("预测成功！" + stockId);
 			Encog.getInstance().shutdown();
+			return true;
 		}
+		return false;
 	}
 }

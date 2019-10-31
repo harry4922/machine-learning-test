@@ -5,6 +5,7 @@ import org.encog.ml.data.MLDataSet;
 import org.encog.ml.data.basic.BasicMLDataSet;
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.neural.networks.layers.BasicLayer;
+import org.encog.neural.networks.training.lma.LevenbergMarquardtTraining;
 import org.encog.neural.networks.training.propagation.resilient.ResilientPropagation;
 
 /**
@@ -31,7 +32,7 @@ public class PerceptronModel {
 	 * 要求设定权重变化的上限和下线
 	 * 适用于full-batch learning，不适用于mini-batch learning
 	 * 该算法的改良版为RMSPROP算法
-	 * 为了得到所需的全局优化算法。两种流行的全局优化算法是粒子群优化算法(PSO)和遗传算法(GA)
+	 * 为了得到所需的全局优化算法。两种流行的全局优化算法是粒子群优化算法(PSO)和遗传算法(GA)，经过测试LevenbergMarquardtTraining算法为最优解
 	 * 
 	 * 
 	 * 
@@ -148,7 +149,7 @@ public class PerceptronModel {
 		/*
 		 * 通过RPROP算法对当前模型进行训练
 		 */
-		final ResilientPropagation trianAlgorithm = new ResilientPropagation(perceptronNetwork , trainSet);
+		final LevenbergMarquardtTraining trianAlgorithm = new LevenbergMarquardtTraining(perceptronNetwork , trainSet);
 		
 		/*
 		 * 记录迭代纪元

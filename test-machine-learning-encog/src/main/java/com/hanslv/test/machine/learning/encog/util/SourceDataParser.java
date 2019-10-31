@@ -14,8 +14,11 @@ import org.encog.app.analyst.EncogAnalyst;
 import org.encog.app.analyst.csv.normalize.AnalystNormalizeCSV;
 import org.encog.app.analyst.wizard.AnalystWizard;
 import org.encog.ml.data.MLDataSet;
+import org.encog.ml.data.basic.BasicMLData;
 import org.encog.ml.data.basic.BasicMLDataSet;
 import org.encog.ml.data.specific.CSVNeuralDataSet;
+import org.encog.neural.networks.BasicNetwork;
+import org.encog.persist.EncogDirectoryPersistence;
 import org.encog.util.arrayutil.NormalizationAction;
 import org.encog.util.arrayutil.NormalizedField;
 import org.encog.util.csv.CSVFormat;
@@ -27,6 +30,9 @@ import com.hanslv.test.machine.learning.encog.constants.MLConstants;
  * 
  * ----------------------------------------------------
  * 1、获取标准化的数据						public static MLDataSet dataAnalyze(List<String> objectStringList , String[] fieldNames , int targetColumnLength , double normalizedH , double normalizedL)
+ * 2、神经网络返回单个数据时判断是否符合预期	public static boolean check(BasicMLData idealOutput , BasicMLData realOutput , double limit)
+ * 3、将算法保存到文件						public static void saveAlgorithm(String filePath , BasicNetwork trainedNetwork)
+ * 4、从文件加载算法							public static BasicNetwork loadAlgorithm(String filePath)
  * ----------------------------------------------------
  * @author hanslv
  *
@@ -122,7 +128,50 @@ public class SourceDataParser {
 	
 	
 	
+	/**
+	 * 2、神经网络返回单个数据时判断是否符合预期
+	 * @param idealOutput
+	 * @param realOutput
+	 * @param limit
+	 * @return
+	 */
+	public static boolean check(BasicMLData idealOutput , BasicMLData realOutput , double limit) {
+		double idealOutputDouble = idealOutput.getData(0);
+		double realOutputDouble = realOutput.getData(0);
+		if(idealOutputDouble > 0 && realOutputDouble > 0) {
+			if(idealOutputDouble - realOutputDouble < limit || realOutputDouble - idealOutputDouble < limit) return true;
+		}else if(idealOutputDouble < 0 && realOutputDouble < 0) {
+			if(idealOutputDouble - realOutputDouble > -limit || realOutputDouble - idealOutputDouble > -limit) return true;
+		}
+		return false;
+	}
 	
+	
+	/**
+	 * 3、将算法保存到文件
+	 * @param filePath
+	 * @param trainedNetwork
+	 */
+	public static void saveAlgorithm(String filePath , BasicNetwork trainedNetwork) {
+		File algorithmFile = new File(filePath);
+		
+		/*
+		 * 先删除当前存在的算法文件
+		 */
+		if(algorithmFile.exists()) algorithmFile.delete();
+		
+		EncogDirectoryPersistence.saveObject(algorithmFile , trainedNetwork);
+	}
+	
+	
+	/**
+	 * 4、从文件加载算法
+	 * @param filePath
+	 * @return
+	 */
+	public static BasicNetwork loadAlgorithm(String filePath) {
+		return (BasicNetwork) EncogDirectoryPersistence.loadObject(new File(filePath));
+	}
 	
 	
 	

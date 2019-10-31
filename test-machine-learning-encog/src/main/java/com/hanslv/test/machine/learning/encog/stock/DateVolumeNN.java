@@ -4,23 +4,24 @@ import org.encog.engine.network.activation.ActivationTANH;
 import org.encog.ml.data.MLDataSet;
 import org.encog.neural.networks.BasicNetwork;
 import org.encog.neural.networks.layers.BasicLayer;
-import org.encog.neural.networks.training.pso.NeuralPSO;
+import org.encog.neural.networks.training.lma.LevenbergMarquardtTraining;
 
 /**
  * 股票日期-成交量训练模型
  * 
+ * 最大学习纪元为1000 * 3
+ * 
  * 1、输入层设计
- * 输入样本集包括股票日期年、月、日共3个神经元
+ * 输入样本集包括股票日期1个神经元
  * 设置偏置单元使决策线可从原点偏移
  * 2、隐藏层设计
- * 由于输入层神经元数量为1，根据设计合理性推断隐藏层各层神经元数量为2n+1=7，因此每层设置7个神经元
- * 根据测试逐渐调整隐藏层层数得出计算时间和计算精度的最佳组合，结果为2
+ * 经过迭代实验，采用3隐藏层，每层10个神经元的学习效率最高
  * 设置偏置单元使决策线可从原点偏移
  * 考虑到输出为(-1,1)区间，因此采用常用的tanh函数为激活函数
  * 3、输出层设计
  * 输出仅需要当前股票的成交量，因此输出层采取单神经元结构
  * 考虑到输出为(-1,1)区间，因此采用常用的tanh函数为激活函数
- * 4、为了加快迭代速度，采取粒子群算法
+ * 4、采用Levenberg Marquardt算法
  * ----------------------------
  * 输入层：
  * 神经元数量：1
@@ -43,6 +44,8 @@ import org.encog.neural.networks.training.pso.NeuralPSO;
  *
  */
 public class DateVolumeNN {
+	private static final int MAX_EPOCH = 1000 * 3;
+	
 	/**
 	 * 执行训练
 	 * @param trainData 样本数据
@@ -63,9 +66,9 @@ public class DateVolumeNN {
 		/*
 		 * 隐藏层结构
 		 */
-		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationTANH() , true , 5));
-		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationTANH() , true , 5));
-		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationTANH() , true , 5));
+		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationTANH() , true , 10));
+		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationTANH() , true , 10));
+		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationTANH() , true , 10));
 		
 		/*
 		 * 输出层结构
@@ -83,9 +86,9 @@ public class DateVolumeNN {
 		dataAndVolumeMode.reset();
 		
 		/*
-		 * 粒子群算法
+		 * Levenberg Marquardt算法
 		 */
-		final NeuralPSO trainAlgorithm = new NeuralPSO(dataAndVolumeMode , trainData);
+		final LevenbergMarquardtTraining trainAlgorithm = new LevenbergMarquardtTraining(dataAndVolumeMode , trainData);
 		
 		/*
 		 * 迭代纪元
@@ -96,8 +99,12 @@ public class DateVolumeNN {
 		 * 执行迭代训练
 		 */
 		do {
+			if(epoch >= MAX_EPOCH) {
+				trainAlgorithm.finishTraining();
+				return null;
+			}
 			trainAlgorithm.iteration();
-			System.out.println("当前纪元：" + epoch + "误差为：" + trainAlgorithm.getError());
+//			System.out.println("当前纪元：" + epoch + "误差为：" + trainAlgorithm.getError());
 			epoch++;
 		}while(trainAlgorithm.getError() > errorLimit);
 		
