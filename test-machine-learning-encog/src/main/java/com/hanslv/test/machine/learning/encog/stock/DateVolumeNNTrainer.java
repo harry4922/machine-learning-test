@@ -14,10 +14,20 @@ import com.hanslv.test.machine.learning.encog.util.SourceDataParser;
 
 /**
  * 训练股票日期-成交量模型
+ * 
  * @author hanslv
  *
  */
 public class DateVolumeNNTrainer {
+	/**
+	 * 训练模型
+	 * 
+	 * @param stockId 股票ID
+	 * @param startDate 起始时间
+	 * @param checkDataSize 校验数据大小
+	 * @param limit 精度
+	 * @return
+	 */
 	public static boolean trainNN(String stockId , String startDate , int checkDataSize , double limit) {
 		String titles = "date,stockPriceVolume";
 		String algorithmFileSuffix = "date_volume.eg";
@@ -84,6 +94,9 @@ public class DateVolumeNNTrainer {
 				 */
 				BasicMLData output = new BasicMLData(algorithmModel.compute(checkInput));
 				
+				/*
+				 * 预测失败，增加天数后重新计算
+				 */
 				if(SourceDataParser.check(checkOutput , output , 0.1)) {
 					Encog.getInstance().shutdown();
 					System.err.println("-----预测失败");
