@@ -59,10 +59,10 @@ public class DbUtil {
 			pstmt.setInt(13 , limit);
 			try(ResultSet resultSet = pstmt.executeQuery();){
 				while(resultSet.next()) {
-					String date = resultSet.getString(1).replaceAll("-", "");
+					String date[] = resultSet.getString(1).split("-");
 					String volume = resultSet.getString(2);
-//					String dataStr = date[0] + "," + Integer.parseInt(date[1]) + "," + Integer.parseInt(date[2]) + "," + volume;
-					String dataStr = date + "," + volume;
+					String dataStr = date[0] + "," + Integer.parseInt(date[1]) + "," + Integer.parseInt(date[2]) + "," + volume;
+//					String dataStr = date + "," + volume;
 					dataList.add(dataStr);
 				}
 			}

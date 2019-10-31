@@ -1,5 +1,6 @@
 package com.hanslv.test.machine.learning.encog.stock;
 
+import java.io.File;
 import java.util.List;
 
 import org.encog.Encog;
@@ -29,15 +30,15 @@ public class DateVolumeNNTrainer {
 	 * @return
 	 */
 	public static boolean trainNN(String stockId , String startDate , int checkDataSize , double limit) {
-		String titles = "date,stockPriceVolume";
+		String titles = "year,month,day,stockPriceVolume";
 		String algorithmFileSuffix = "date_volume.eg";
-		String basePath = "test/";
+		String basePath = "D:" + File.separator + "data" + File.separator + "mine" + File.separator + "test-dateVolumeNN" + File.separator;
 		String algorithmFilePath = basePath + stockId + "_" + algorithmFileSuffix;
 		
 		/*
-		 * 初始训练时间为200天，每次迭代增加50天直到当前ID的全部数据用完或找出最佳模型
+		 * 初始训练时间为365天，每次迭代增加50天直到当前ID的全部数据用完或找出最佳模型
 		 */
-		loop1:for(int trainDataSize = 200 ; trainDataSize < Integer.MAX_VALUE ; trainDataSize = trainDataSize + 50) {
+		loop1:for(int trainDataSize = 365 ; trainDataSize < Integer.MAX_VALUE ; trainDataSize = trainDataSize + 50) {
 			
 			
 			/*
@@ -56,7 +57,7 @@ public class DateVolumeNNTrainer {
 			/*
 			 * 算法训练数据
 			 */
-			MLDataSet mainData = SourceDataParser.dataAnalyze(mainDataList , titles.split(",") , 1 , 0.9 , -0.9);
+			MLDataSet mainData = SourceDataParser.dataAnalyze(mainDataList , titles.split(",") , 1 , 1 , 0);
 			MLDataSet trainData = new BasicMLDataSet();
 			MLDataSet checkData = new BasicMLDataSet();
 			
@@ -97,7 +98,7 @@ public class DateVolumeNNTrainer {
 				/*
 				 * 预测失败，增加天数后重新计算
 				 */
-				if(SourceDataParser.check(checkOutput , output , 0.1)) {
+				if(SourceDataParser.check(checkOutput , output , 0.001)) {
 					Encog.getInstance().shutdown();
 					System.err.println("-----预测失败");
 					continue loop1;

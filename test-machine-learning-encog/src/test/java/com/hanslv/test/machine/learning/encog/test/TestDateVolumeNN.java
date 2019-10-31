@@ -16,12 +16,13 @@ import com.hanslv.test.machine.learning.encog.util.SourceDataParser;
 public class TestDateVolumeNN {
 	public static void main(String[] args) {
 //		loop1:for(int j = 0 ; j <= 3555 ; j++) {
-		loop1:for(int j = 18 ; j < 3555 ; j++) {
-			String startDate = "2019-07-26";
+//		loop1:for(int j = 1 ; j < 2 ; j++) {
+		for(int j = 1 ; j < 2 ; j++) {
+			String startDate = "1999-11-10";
 			String stockId = j + "";
 	//		String titles = "year,month,day,stockPriceVolume";
-			String titles = "date,stockPriceVolume";
-			int trainDataSize = 45;
+			String titles = "year,month,day,stockPriceVolume";
+			int trainDataSize = 365;
 			int checkDataSize = 5;
 			
 			/*
@@ -37,7 +38,7 @@ public class TestDateVolumeNN {
 			/*
 			 * 算法训练数据
 			 */
-			MLDataSet mainData = SourceDataParser.dataAnalyze(mainDataList , titles.split(",") , 1 , 0.9 , -0.9);
+			MLDataSet mainData = SourceDataParser.dataAnalyze(mainDataList , titles.split(",") , 1 , 1 , 0);
 			MLDataSet trainData = new BasicMLDataSet();
 			MLDataSet checkData = new BasicMLDataSet();
 			
@@ -60,7 +61,7 @@ public class TestDateVolumeNN {
 			/*
 			 * 训练算法
 			 */
-			BasicNetwork algorithmModel = DateVolumeNN.train(trainData , 0.005);
+			BasicNetwork algorithmModel = DateVolumeNN.train(trainData , 0.0005);
 			
 			/*
 			 * 收敛失败
@@ -78,30 +79,30 @@ public class TestDateVolumeNN {
 			 */
 			for(MLDataPair checkDataPair : checkData) {
 				BasicMLData checkInput = new BasicMLData(checkDataPair.getInput());
-//				System.out.println("--------------------------------");
+				System.out.println("--------------------------------");
 //				System.out.println("输入：");
 //				System.out.println(checkInput.toString());
-//				System.out.println("预测输出：");
+				System.out.println("预测输出：");
 				
 				BasicMLData checkOutput = new BasicMLData(checkDataPair.getIdeal());
 				
-//				System.out.println(checkOutput.toString());
+				System.out.println(checkOutput.toString());
 				
 				/*
 				 * 执行算法
 				 */
 				BasicMLData output = new BasicMLData(algorithmModel.compute(checkInput));
 				
-//				System.out.println("实际输出：");
-//				System.out.println(output.toString());
+				System.out.println("实际输出：");
+				System.out.println(output.toString());
 				
-				if(SourceDataParser.check(checkOutput , output , 0.1)) {
-					Encog.getInstance().shutdown();
-					System.err.println("-----预测失败");
-					continue loop1;
-				}
+//				if(SourceDataParser.check(checkOutput , output , 0.1)) {
+//					Encog.getInstance().shutdown();
+//					System.err.println("-----预测失败");
+//					continue loop1;
+//				}
 			}
-			System.out.println("预测成功！" + stockId);
+//			System.out.println("预测成功！" + stockId);
 			Encog.getInstance().shutdown();
 		}
 	}
