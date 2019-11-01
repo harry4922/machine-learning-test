@@ -38,7 +38,7 @@ public class TestDateVolumeNN {
 			/*
 			 * 算法训练数据
 			 */
-			MLDataSet mainData = SourceDataParser.dataAnalyze(mainDataList , titles.split(",") , 1 , 1 , 0);
+			MLDataSet mainData = SourceDataParser.dataAnalyze(mainDataList , titles.split(",") , 1 , 1 , 0).values().iterator().next();
 			MLDataSet trainData = new BasicMLDataSet();
 			MLDataSet checkData = new BasicMLDataSet();
 			

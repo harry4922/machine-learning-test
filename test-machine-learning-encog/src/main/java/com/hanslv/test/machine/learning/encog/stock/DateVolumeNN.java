@@ -12,7 +12,7 @@ import org.encog.neural.networks.training.lma.LevenbergMarquardtTraining;
  *
  */
 public class DateVolumeNN {
-	private static final int MAX_EPOCH = 1000 * 5;
+//	private static final int MAX_EPOCH = 10000 * 20;
 	
 	/**
 	 * 执行训练
@@ -29,19 +29,20 @@ public class DateVolumeNN {
 		/*
 		 * 输入层结构
 		 */
-		dataAndVolumeMode.addLayer(new BasicLayer(null , true , 3));
+		dataAndVolumeMode.addLayer(new BasicLayer(null , true , 2));
 		
 		/*
 		 * 隐藏层结构
 		 */
-		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 10));
-		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 10));
-		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 10));
+		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 7));
+		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 7));
+		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 7));
+		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 7));
 		
 		/*
 		 * 输出层结构
 		 */
-		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 1));
+		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 2));
 		
 		/*
 		 * 结束神经网络构建
@@ -67,10 +68,10 @@ public class DateVolumeNN {
 		 * 执行迭代训练
 		 */
 		do {
-			if(epoch >= MAX_EPOCH) {
-				trainAlgorithm.finishTraining();
-				return null;
-			}
+//			if(epoch >= MAX_EPOCH) {
+//				trainAlgorithm.finishTraining();
+//				return null;
+//			}
 			trainAlgorithm.iteration();
 			System.out.println("当前纪元：" + epoch + "误差为：" + trainAlgorithm.getError());
 			epoch++;

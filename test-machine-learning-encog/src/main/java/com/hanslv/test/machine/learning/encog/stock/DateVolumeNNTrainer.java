@@ -2,6 +2,8 @@ package com.hanslv.test.machine.learning.encog.stock;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.encog.Encog;
 import org.encog.ml.data.MLDataPair;
@@ -9,6 +11,7 @@ import org.encog.ml.data.MLDataSet;
 import org.encog.ml.data.basic.BasicMLData;
 import org.encog.ml.data.basic.BasicMLDataSet;
 import org.encog.neural.networks.BasicNetwork;
+import org.encog.util.arrayutil.NormalizedField;
 
 import com.hanslv.test.machine.learning.encog.util.DbUtil;
 import com.hanslv.test.machine.learning.encog.util.SourceDataParser;
@@ -29,16 +32,16 @@ public class DateVolumeNNTrainer {
 	 * @param limit 精度
 	 * @return
 	 */
-	public static boolean trainNN(String stockId , String startDate , int checkDataSize , double limit) {
-		String titles = "year,month,day,stockPriceVolume";
-		String algorithmFileSuffix = "date_volume.eg";
+	public static boolean trainNN(String stockId , String startDate , int checkDataSize , double limit , double checkLimit) {
+		String titles = "month,day,stockPricestartPrice,stockPriceend";
+		String algorithmFileSuffix = "date_price.eg";
 		String basePath = "D:" + File.separator + "data" + File.separator + "mine" + File.separator + "test-dateVolumeNN" + File.separator;
 		String algorithmFilePath = basePath + stockId + "_" + algorithmFileSuffix;
 		
 		/*
 		 * 初始训练时间为365天，每次迭代增加50天直到当前ID的全部数据用完或找出最佳模型
 		 */
-		loop1:for(int trainDataSize = 365 ; trainDataSize < Integer.MAX_VALUE ; trainDataSize = trainDataSize + 50) {
+		loop1:for(int trainDataSize = 70; trainDataSize < Integer.MAX_VALUE ; trainDataSize = trainDataSize + 50) {
 			
 			
 			/*
@@ -57,7 +60,10 @@ public class DateVolumeNNTrainer {
 			/*
 			 * 算法训练数据
 			 */
-			MLDataSet mainData = SourceDataParser.dataAnalyze(mainDataList , titles.split(",") , 1 , 1 , 0);
+			Map<Map<String , NormalizedField> , MLDataSet> analyzedResult = SourceDataParser.dataAnalyze(mainDataList , titles.split(",") , 2 , 1 , 0);
+			Entry<Map<String , NormalizedField> , MLDataSet> analyzedResultEntry = analyzedResult.entrySet().iterator().next();
+			Map<String , NormalizedField> deNormalizedMap = analyzedResultEntry.getKey();
+			MLDataSet mainData = analyzedResultEntry.getValue();
 			MLDataSet trainData = new BasicMLDataSet();
 			MLDataSet checkData = new BasicMLDataSet();
 			
@@ -95,22 +101,28 @@ public class DateVolumeNNTrainer {
 				 */
 				BasicMLData output = new BasicMLData(algorithmModel.compute(checkInput));
 				
-				/*
-				 * 预测失败，增加天数后重新计算
-				 */
-				if(SourceDataParser.check(checkOutput , output , 0.001)) {
-					Encog.getInstance().shutdown();
-					System.err.println("-----预测失败");
-					continue loop1;
-				}
+//				NormalizedField startPricedeNormalizer = deNormalizedMap.get("stockPricestart");
+				NormalizedField endPriceNormalizer = deNormalizedMap.get("stockPriceend");
+				System.out.println("--------------------------");
+				System.out.println("实际：" + endPriceNormalizer.deNormalize(checkOutput.getData(1)));
+				System.out.println("预测：" + endPriceNormalizer.deNormalize(output.getData(1)));
+				
+//				/*
+//				 * 预测失败，增加天数后重新计算
+//				 */
+//				if(SourceDataParser.check(checkOutput , output , checkLimit)) {
+//					Encog.getInstance().shutdown();
+//					System.err.println("-----预测失败");
+//					continue loop1;
+//				}
 			}
 			
 			/*
 			 * 预测成功保存算法到文件
 			 */
-			SourceDataParser.saveAlgorithm(algorithmFilePath , algorithmModel);
-			System.out.println("预测成功！" + stockId);
-			Encog.getInstance().shutdown();
+//			SourceDataParser.saveAlgorithm(algorithmFilePath , algorithmModel);
+//			System.out.println("预测成功！" + stockId);
+//			Encog.getInstance().shutdown();
 			return true;
 		}
 		return false;

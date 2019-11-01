@@ -22,25 +22,24 @@ public class DbUtil {
 	public static List<String> getDataAndVolumeMap(String stockId , String startDate , Integer limit){
 		List<String> dataList = new ArrayList<>();
 		
-//		String sql = "SELECT stock_price_date , stock_price_volume FROM tab_stock_price WHERE stockId = ? AND stock_price_date > ? LIMIT ?";
 		String sql = 
-		"SELECT stock_price_date , stock_price_volume " + 
-		"FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date >= ?" + 
+		"SELECT stock_price_date , stock_price_start_price , stock_price_end_price " + 
+		"FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date >= ? " + 
 		"UNION " + 
-		"SELECT stock_price_date , stock_price_volume " +  
-		"FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date >= ?" + 
+		"SELECT stock_price_date , stock_price_start_price , stock_price_end_price " +  
+		"FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date >= ? " + 
 		"UNION " + 
-		"SELECT stock_price_date , stock_price_volume " +  
-		"FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date >= ?" + 
+		"SELECT stock_price_date , stock_price_start_price , stock_price_end_price " +  
+		"FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date >= ? " + 
 		"UNION " + 
-		"SELECT stock_price_date , stock_price_volume " +  
-		"FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date >= ?" + 
+		"SELECT stock_price_date , stock_price_start_price , stock_price_end_price " +  
+		"FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date >= ? " + 
 		"UNION " + 
-		"SELECT stock_price_date , stock_price_volume " +  
-		"FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date >= ?" + 
+		"SELECT stock_price_date , stock_price_start_price , stock_price_end_price " +  
+		"FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date >= ? " + 
 		"UNION " + 
-		"SELECT stock_price_date , stock_price_volume " +  
-		"FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date >= ?" + 
+		"SELECT stock_price_date , stock_price_start_price , stock_price_end_price " +  
+		"FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date >= ? " + 
 		"ORDER BY stock_price_date ASC LIMIT ?";
 		
 		try(PreparedStatement pstmt = JdbcUtil.getJdbcConnection().prepareStatement(sql);){
@@ -60,9 +59,10 @@ public class DbUtil {
 			try(ResultSet resultSet = pstmt.executeQuery();){
 				while(resultSet.next()) {
 					String date[] = resultSet.getString(1).split("-");
-					String volume = resultSet.getString(2);
-					String dataStr = date[0] + "," + Integer.parseInt(date[1]) + "," + Integer.parseInt(date[2]) + "," + volume;
-//					String dataStr = date + "," + volume;
+					String startPrice = resultSet.getString(2);
+					String endPrice = resultSet.getString(3);
+//					String dataStr = date[0] + "," + Integer.parseInt(date[1]) + "," + Integer.parseInt(date[2]) + "," + startPrice + "," + endPrice;
+					String dataStr = Integer.parseInt(date[1]) + "," + Integer.parseInt(date[2]) + "," + startPrice + "," + endPrice;
 					dataList.add(dataStr);
 				}
 			}

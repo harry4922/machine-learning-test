@@ -56,7 +56,7 @@ public class TestParseRawData {
 		rawDataList.add(data3);
 		rawDataList.add(data4);
 		
-		for(MLDataPair checkDataPair : SourceDataParser.dataAnalyze(rawDataList , title.split(",") , 1 , 0.9 , -0.9)) {
+		for(MLDataPair checkDataPair : SourceDataParser.dataAnalyze(rawDataList , title.split(",") , 1 , 0.9 , -0.9).values().iterator().next()) {
 			BasicMLData input = new BasicMLData(checkDataPair.getInput());
 			BasicMLData output = new BasicMLData(checkDataPair.getIdeal());
 			System.out.println("输入：" + input.toString() + ";" + "输出：" + output.toString());

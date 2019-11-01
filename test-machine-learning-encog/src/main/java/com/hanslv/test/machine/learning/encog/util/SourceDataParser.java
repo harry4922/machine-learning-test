@@ -49,7 +49,7 @@ public class SourceDataParser {
 	 * @param targetColumnLength idealOutput字段数量
 	 * @return
 	 */
-	public static MLDataSet dataAnalyze(List<String> objectStringList , String[] fieldNames , int targetColumnLength , double normalizedH , double normalizedL) {
+	public static Map<Map<String , NormalizedField> , MLDataSet> dataAnalyze(List<String> objectStringList , String[] fieldNames , int targetColumnLength , double normalizedH , double normalizedL) {
 		/*
 		 * 标准化后的输入样本数组和预测输出样本数组
 		 */
@@ -122,7 +122,10 @@ public class SourceDataParser {
 			idealOutputArray[i] = currentIdealOutputArray;
 		}
 		
-		return new BasicMLDataSet(inputArray , idealOutputArray);
+		Map<Map<String , NormalizedField> , MLDataSet> resultMap = new HashMap<>();
+		resultMap.put(normalizedFieldMap , new BasicMLDataSet(inputArray , idealOutputArray));
+		
+		return resultMap;
 	}
 	
 	
@@ -138,11 +141,38 @@ public class SourceDataParser {
 	public static boolean check(BasicMLData idealOutput , BasicMLData realOutput , double limit) {
 		double idealOutputDouble = idealOutput.getData(0);
 		double realOutputDouble = realOutput.getData(0);
-		if(idealOutputDouble > 0 && realOutputDouble > 0) {
-			if(idealOutputDouble - realOutputDouble < limit || realOutputDouble - idealOutputDouble < limit) return true;
-		}else if(idealOutputDouble < 0 && realOutputDouble < 0) {
-			if(idealOutputDouble - realOutputDouble > -limit || realOutputDouble - idealOutputDouble > -limit) return true;
+		double checkFlag = 0;
+		
+		if(idealOutputDouble >=0 && realOutputDouble >= 0) {
+			/*
+			 * 二者都大于等于0
+			 */
+			if(idealOutputDouble > realOutputDouble) checkFlag = idealOutputDouble - realOutputDouble;
+			else if(idealOutputDouble < realOutputDouble) checkFlag = realOutputDouble - idealOutputDouble;
+			else return true;
+			if(checkFlag / idealOutputDouble + realOutputDouble < limit) return true;
+		}else if(idealOutputDouble >= 0 && realOutputDouble < 0) {
+			/*
+			 * 预计输出大于等于0，实际输出小于0
+			 */
+			checkFlag = idealOutputDouble - realOutputDouble;
+			if(checkFlag / idealOutputDouble - realOutputDouble < limit) return true;
+		}else if(idealOutputDouble < 0 && realOutputDouble >= 0) {
+			/*
+			 * 预计输出小于0，实际输出大于等于0
+			 */
+			checkFlag = realOutputDouble - idealOutputDouble;
+			if(checkFlag / realOutputDouble - idealOutputDouble < limit) return true;
+		}else {
+			/*
+			 * 二者都小于0
+			 */
+			if(idealOutputDouble > realOutputDouble) checkFlag = idealOutputDouble + realOutputDouble;
+			else if(idealOutputDouble < realOutputDouble) checkFlag = realOutputDouble + idealOutputDouble;
+			else return true;
+			if(checkFlag / -(idealOutputDouble - realOutputDouble) < limit) return true;
 		}
+		
 		return false;
 	}
 	
