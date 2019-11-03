@@ -110,7 +110,7 @@ public class SourceDataParser {
 				 * 判断当前数据是输入还是预测输出
 				 * 本条数据列下标小于全部数据列数量-输出数据列数量
 				 */
-				if(j < (fieldNames.length - targetColumnLength)) currentInputDataArray[j] = currentNormalizedField.normalize(new Double(objectStringArray[j].trim()));
+				if(j < (fieldNames.length - targetColumnLength)) currentInputDataArray[j] = new Double(objectStringArray[j].trim());
 				else currentIdealOutputArray[j - fieldNames.length + targetColumnLength] = currentNormalizedField.normalize(new Double(objectStringArray[j].trim()));
 				
 			}
