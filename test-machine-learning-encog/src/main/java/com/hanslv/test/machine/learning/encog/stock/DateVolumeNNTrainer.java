@@ -41,7 +41,7 @@ public class DateVolumeNNTrainer {
 		/*
 		 * 初始训练时间为365天，每次迭代增加50天直到当前ID的全部数据用完或找出最佳模型
 		 */
-		loop1:for(int trainDataSize = 70; trainDataSize < Integer.MAX_VALUE ; trainDataSize = trainDataSize + 50) {
+		loop1:for(int trainDataSize = 40; trainDataSize < Integer.MAX_VALUE ; trainDataSize = trainDataSize + 50) {
 			
 			
 			/*
@@ -104,8 +104,8 @@ public class DateVolumeNNTrainer {
 //				NormalizedField startPricedeNormalizer = deNormalizedMap.get("stockPricestart");
 				NormalizedField endPriceNormalizer = deNormalizedMap.get("stockPriceend");
 				System.out.println("--------------------------");
-				System.out.println("实际：" + endPriceNormalizer.deNormalize(checkOutput.getData(1)));
-				System.out.println("预测：" + endPriceNormalizer.deNormalize(output.getData(1)));
+				System.out.println(checkOutput.getData(1) + "实际：" + endPriceNormalizer.deNormalize(checkOutput.getData(1)));
+				System.out.println(output.getData(1) + "预测：" + endPriceNormalizer.deNormalize(output.getData(1)));
 				
 //				/*
 //				 * 预测失败，增加天数后重新计算
