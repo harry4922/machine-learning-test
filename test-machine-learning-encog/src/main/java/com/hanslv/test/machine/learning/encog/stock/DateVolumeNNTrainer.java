@@ -38,10 +38,7 @@ public class DateVolumeNNTrainer {
 		String basePath = "D:" + File.separator + "data" + File.separator + "mine" + File.separator + "test-dateVolumeNN" + File.separator;
 		String algorithmFilePath = basePath + stockId + "_" + algorithmFileSuffix;
 		
-		/*
-		 * 初始训练时间为365天，每次迭代增加50天直到当前ID的全部数据用完或找出最佳模型
-		 */
-		loop1:for(int trainDataSize = 40; trainDataSize < Integer.MAX_VALUE ; trainDataSize = trainDataSize + 50) {
+		loop1:for(int trainDataSize = 30; trainDataSize < Integer.MAX_VALUE ; trainDataSize = trainDataSize + 50) {
 			
 			
 			/*
