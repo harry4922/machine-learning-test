@@ -38,6 +38,14 @@ public class DateVolumeNN {
 		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 7));
 		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 7));
 		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 7));
+		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 7));
+//		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 7));
+//		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 10));
+//		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 10));
+//		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 10));
+//		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 10));
+//		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 10));
+//		dataAndVolumeMode.addLayer(new BasicLayer(new ActivationSigmoid() , true , 10));
 		
 		/*
 		 * 输出层结构

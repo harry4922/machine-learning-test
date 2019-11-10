@@ -3,13 +3,13 @@ package com.hanslv.test.machine.learning.encog.test;
 import com.hanslv.test.machine.learning.encog.stock.DateVolumeNNTrainer;
 
 public class TestTrainDateVolumeNN {
-	static String stockId = "1";
+	static String stockId = "115";
 //	static String startDate = "2019-09-10";
-	static String startDate = "2019-09-05";
-	static int checkDataSize = 5;
+	static String startDate = "2019-06-14";
+	static int checkDataSize = 6;
 //	static double limit = 0.003;
 //	static double limit = 0.0057;
-	static double limit = 0.0000005;
+	static double limit = 0.00000005;
 //	static double limit = 0.001;
 //	static double limit = 0.0004;
 //	static double limit = 0.00005;
