@@ -84,18 +84,53 @@ public class TestStockLSTMTrainer {
 		 */
 		System.out.println("预测值：");
 		NormalizerStandardize normalizerStandardize = (NormalizerStandardize) iteratorList.get(1).getPreProcessor();
-		while(iteratorList.get(1).hasNext()) {
-			INDArray input = iteratorList.get(1).next().getFeatures();
+		
+		/*
+		 * 测试数值标准化
+		 */
+//		DataSet testData = iteratorList.get(1).next();
+//		normalizerStandardize.revert(testData);
+//		System.out.println(testData);
+//		System.out.println("-------------------------------------");
+		
+		/*
+		 * 批量预测
+		 */
+//		DataSet input = iteratorList.get(1).next();
+//		INDArray output = lstmNetwork.rnnTimeStep(input.getFeatures());
+//		DataSet resultDataSet = new DataSet(input.getFeatures() , output);
+//		normalizerStandardize.revert(resultDataSet);
+//		System.out.println(resultDataSet.getLabels());
+		
+		
+		/*
+		 * 按测试值预测
+		 */
+//		List<DataSet> testDataSet = iteratorList.get(1).next().batchBy(1);
+//		for(DataSet testData : testDataSet) {
+//			INDArray input = testData.getFeatures();
+//			INDArray output = lstmNetwork.rnnTimeStep(input);
+//			DataSet resultDataSet = new DataSet(input , output);
+//			normalizerStandardize.revert(resultDataSet);
+//			System.out.println(resultDataSet.getLabels());
+//		}
+		
+		
+		/*
+		 * 按前一天预测的值预测
+		 */
+		INDArray input = iteratorList.get(1).next().batchBy(1).get(0).getFeatures();
+		for(int i = 0 ; i < testDataSize ; i++) {
 			INDArray output = lstmNetwork.rnnTimeStep(input);
-			DataSet resultDataSet = new DataSet(input , output);
-			normalizerStandardize.revert(resultDataSet);
-			System.out.println(resultDataSet.getLabels());
-			
-//			DataSet testData = iteratorList.get(1).next();
-//			normalizerStandardize.revert(testData);
-//			System.out.println(testData);
-			System.out.println("-------------------------------------");
+			DataSet result = new DataSet(input , output);
+			normalizerStandardize.revert(result);
+			System.out.println(result.getLabels());
+			input = output;
 		}
+		
+		/*
+		 * 重置评估数据集
+		 */
 		iteratorList.get(1).reset();
 		
 		/*
@@ -109,7 +144,8 @@ public class TestStockLSTMTrainer {
 		/*
 		 * 计算50个纪元
 		 */
-		Evaluation result = train("980" , "2019-11-24" , 89 , 5 , 2 , 100);
+//		Evaluation result = train("1475" , "2019-11-24" , 21 , 5 , 2 , 50);
+		Evaluation result = train("1692" , "2019-11-24" , 89 , 5 , 2 , 500);
 		if(result != null) {
 			System.out.println("accuracy：" + result.accuracy());
 			System.out.println(result.f1());

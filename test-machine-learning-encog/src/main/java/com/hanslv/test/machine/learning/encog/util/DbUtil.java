@@ -209,19 +209,19 @@ public class DbUtil {
 	public static List<String> deeplearning4jData(String stockId , String endDate , int limit){
 		List<String> dataList = new ArrayList<>();
 		
-//		String sql = //开盘价、收盘价
-//				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"UNION " + 
-//				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"UNION " + 
-//				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"UNION " + 
-//				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"UNION " + 
-//				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"UNION " + 
-//				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"ORDER BY stock_price_date DESC LIMIT ?";
+		String sql = //开盘价、收盘价
+				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"UNION " + 
+				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"UNION " + 
+				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"UNION " + 
+				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"UNION " + 
+				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"UNION " + 
+				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"ORDER BY stock_price_date DESC LIMIT ?";
 		
 //		String sql = //成交量、开盘价、收盘价
 //				"SELECT stock_price_date , stock_price_volume , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
@@ -237,19 +237,19 @@ public class DbUtil {
 //				"SELECT stock_price_date , stock_price_volume , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
 //				"ORDER BY stock_price_date DESC LIMIT ?";
 		
-		String sql = //成交量、最高价、最低价、开盘价、收盘价
-				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
-				"UNION " + 
-				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
-				"UNION " + 
-				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
-				"UNION " + 
-				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
-				"UNION " + 
-				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
-				"UNION " + 
-				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
-				"ORDER BY stock_price_date DESC LIMIT ?";
+//		String sql = //成交量、最高价、最低价、开盘价、收盘价
+//				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
+//				"UNION " + 
+//				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
+//				"UNION " + 
+//				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
+//				"UNION " + 
+//				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
+//				"UNION " + 
+//				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
+//				"UNION " + 
+//				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
+//				"ORDER BY stock_price_date DESC LIMIT ?";
 		try(PreparedStatement pstmt = JdbcUtil.getJdbcConnection().prepareStatement(sql)){
 			pstmt.setString(1, stockId);
 			pstmt.setString(2, endDate);
@@ -269,9 +269,9 @@ public class DbUtil {
 					/*
 					 * 开盘价、收盘价
 					 */
-//					String startPrice = resultSet.getString(2);//开盘价
-//					String endPrice = resultSet.getString(3);//收盘价
-//					String dataStr = startPrice + "," + endPrice;
+					String startPrice = resultSet.getString(2);//开盘价
+					String endPrice = resultSet.getString(3);//收盘价
+					String dataStr = startPrice + "," + endPrice;
 					
 					/*
 					 * 成交量、开盘价、收盘价
@@ -284,12 +284,12 @@ public class DbUtil {
 					/*
 					 * 成交量、最高价、最低价、开盘价、收盘价
 					 */
-					String volume = resultSet.getString(2);
-					String highest = resultSet.getString(3);
-					String lowest = resultSet.getString(4);
-					String startPrice = resultSet.getString(5);
-					String endPrice = resultSet.getString(6);
-					String dataStr = volume + "," + highest + "," + lowest + "," + startPrice + "," + endPrice;
+//					String volume = resultSet.getString(2);
+//					String highest = resultSet.getString(3);
+//					String lowest = resultSet.getString(4);
+//					String startPrice = resultSet.getString(5);
+//					String endPrice = resultSet.getString(6);
+//					String dataStr = volume + "," + highest + "," + lowest + "," + startPrice + "," + endPrice;
 					
 					dataList.add(dataStr);
 				}
@@ -309,11 +309,11 @@ public class DbUtil {
 			if(!"".equals(idealVal)) resultList.add(dataStr + "," + idealVal);
 			String[] dataStrArray = dataStr.split(",");
 			
-//			idealVal = dataStrArray[0] + "," + dataStrArray[1];//开盘价、收盘价
+			idealVal = dataStrArray[0] + "," + dataStrArray[1];//开盘价、收盘价
 			
 //			idealVal = dataStrArray[1] + "," + dataStrArray[2];//成交量、开盘价、收盘价
 			
-			idealVal = dataStrArray[3] + "," + dataStrArray[4];//成交量、最高价、最低价、开盘价、收盘价
+//			idealVal = dataStrArray[3] + "," + dataStrArray[4];//成交量、最高价、最低价、开盘价、收盘价
 		}
 		/*
 		 * 将排序改为正序

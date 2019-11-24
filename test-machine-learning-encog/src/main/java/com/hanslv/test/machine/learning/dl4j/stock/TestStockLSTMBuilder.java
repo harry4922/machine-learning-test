@@ -26,7 +26,7 @@ public class TestStockLSTMBuilder {
 		 * 隐藏层
 		 */
 		FeedForwardLayer hideLayerA = new LSTM.Builder()
-				.nIn(5)
+				.nIn(2)
 				.nOut(4)
 				.activation(new ActivationTanH()).build();
 		FeedForwardLayer hideLayerB = new LSTM.Builder()
@@ -41,7 +41,7 @@ public class TestStockLSTMBuilder {
 				.nIn(4)
 				.nOut(2)
 				.activation(new ActivationTanH()).build();
-		
-		return NNFactory.buildRNN(100000 , WeightInit.XAVIER , new Adam(0.1 , 0.9 , 0.9999 , 1e-10) , hideLayerA , hideLayerB , outputLayer);
+		//new Nesterovs(9, 0.9)	new Adam(0.1 , 0.9 , 0.9999 , 1e-10)
+		return NNFactory.buildRNN(100000 , WeightInit.XAVIER , new Adam(0.1 , 0.9 , 0.9999 , 0.0000000001) , hideLayerA , hideLayerB , outputLayer);
 	}
 }
