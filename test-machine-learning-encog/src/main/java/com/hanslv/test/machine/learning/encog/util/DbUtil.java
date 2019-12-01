@@ -1,5 +1,6 @@
 package com.hanslv.test.machine.learning.encog.util;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -206,50 +207,21 @@ public class DbUtil {
 	 * @param limit
 	 * @return
 	 */
-	public static List<String> deeplearning4jData(String stockId , String endDate , int limit){
+	public static List<String> deeplearning4jData(String stockId , String endDate , int dataSize){
 		List<String> dataList = new ArrayList<>();
-		
-		String sql = //开盘价、收盘价
-				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
+		String sql = //成交量、最高价、最低价、开盘价、收盘价
+				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
 				"UNION " + 
-				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
 				"UNION " + 
-				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
 				"UNION " + 
-				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
 				"UNION " + 
-				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
 				"UNION " + 
-				"SELECT stock_price_date , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
 				"ORDER BY stock_price_date DESC LIMIT ?";
-		
-//		String sql = //成交量、开盘价、收盘价
-//				"SELECT stock_price_date , stock_price_volume , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"UNION " + 
-//				"SELECT stock_price_date , stock_price_volume , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"UNION " + 
-//				"SELECT stock_price_date , stock_price_volume , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"UNION " + 
-//				"SELECT stock_price_date , stock_price_volume , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"UNION " + 
-//				"SELECT stock_price_date , stock_price_volume , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"UNION " + 
-//				"SELECT stock_price_date , stock_price_volume , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"ORDER BY stock_price_date DESC LIMIT ?";
-		
-//		String sql = //成交量、最高价、最低价、开盘价、收盘价
-//				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"UNION " + 
-//				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"UNION " + 
-//				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"UNION " + 
-//				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"UNION " + 
-//				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"UNION " + 
-//				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
-//				"ORDER BY stock_price_date DESC LIMIT ?";
 		try(PreparedStatement pstmt = JdbcUtil.getJdbcConnection().prepareStatement(sql)){
 			pstmt.setString(1, stockId);
 			pstmt.setString(2, endDate);
@@ -263,34 +235,18 @@ public class DbUtil {
 			pstmt.setString(10, endDate);
 			pstmt.setString(11, stockId);
 			pstmt.setString(12, endDate);
-			pstmt.setInt(13, limit);
+			pstmt.setInt(13 , dataSize);
 			try(ResultSet resultSet = pstmt.executeQuery()){
 				while(resultSet.next()) {
 					/*
-					 * 开盘价、收盘价
-					 */
-					String startPrice = resultSet.getString(2);//开盘价
-					String endPrice = resultSet.getString(3);//收盘价
-					String dataStr = startPrice + "," + endPrice;
-					
-					/*
-					 * 成交量、开盘价、收盘价
-					 */
-//					String volume = resultSet.getString(2);
-//					String startPrice = resultSet.getString(3);
-//					String endPrice = resultSet.getString(4);
-//					String dataStr = volume + "," + startPrice + "," + endPrice;
-					
-					/*
 					 * 成交量、最高价、最低价、开盘价、收盘价
 					 */
-//					String volume = resultSet.getString(2);
-//					String highest = resultSet.getString(3);
-//					String lowest = resultSet.getString(4);
-//					String startPrice = resultSet.getString(5);
-//					String endPrice = resultSet.getString(6);
-//					String dataStr = volume + "," + highest + "," + lowest + "," + startPrice + "," + endPrice;
-					
+					String volume = resultSet.getString(2);
+					String highest = resultSet.getString(3);
+					String lowest = resultSet.getString(4);
+					String startPrice = resultSet.getString(5);
+					String endPrice = resultSet.getString(6);
+					String dataStr = volume + "," + startPrice + "," + endPrice + "," + highest + "," + lowest;
 					dataList.add(dataStr);
 				}
 			}
@@ -300,26 +256,77 @@ public class DbUtil {
 			JdbcUtil.closeJdbcConnection();
 		}
 		
+		if(dataList.size() < dataSize) return null;
+		
 		/*
-		 * 添加预测结果
+		 * 获取将5天内的最高价和最低价
 		 */
-		List<String> resultList = new ArrayList<>();
-		String idealVal = "";//当前运行条件的预测结果
-		for(String dataStr : dataList) {
-			if(!"".equals(idealVal)) resultList.add(dataStr + "," + idealVal);
-			String[] dataStrArray = dataStr.split(",");
+		int counter = 0;
+		String highestBuffer = "";
+		String lowestBuffer = "";
+		
+		/*
+		 * 记录每5天的最高价和最低价
+		 */
+		List<String> highAndLowList = new ArrayList<>();
+		
+		for(String data : dataList) {
+			String[] dataArray = data.split(",");
+			/*
+			 * 当前最高价
+			 */
+			String currentHighest = dataArray[3];
 			
-			idealVal = dataStrArray[0] + "," + dataStrArray[1];//开盘价、收盘价
+			/*
+			 * 当前最低价
+			 */
+			String currentLowest = dataArray[4];
 			
-//			idealVal = dataStrArray[1] + "," + dataStrArray[2];//成交量、开盘价、收盘价
+			/*
+			 * 初始化或比对5天内最高价
+			 */
+			if("".equals(highestBuffer)) highestBuffer = currentHighest;
+			else if(new BigDecimal(highestBuffer).compareTo(new BigDecimal(currentHighest)) < 0) highestBuffer = currentHighest;
+			/*
+			 * 初始化或比对5天内最低价
+			 */
+			if("".equals(lowestBuffer)) lowestBuffer = currentLowest;
+			else if(new BigDecimal(lowestBuffer).compareTo(new BigDecimal(currentLowest)) > 0) lowestBuffer = currentLowest;
 			
-//			idealVal = dataStrArray[3] + "," + dataStrArray[4];//成交量、最高价、最低价、开盘价、收盘价
+			
+			/*
+			 * 为5天则添加到resultList中
+			 */
+			if(++counter == 5) {
+				String result = highestBuffer + "," + lowestBuffer;
+				highAndLowList.add(result);
+				
+				/*
+				 * 复原Buffers
+				 */
+				highestBuffer = "";
+				lowestBuffer = "";
+				counter = 0;
+			}
 		}
+		
+		/*
+		 * 匹配5日内的信息和后5日的最高价、最低价
+		 */
+		List<String> finalResultList = new ArrayList<>();
+		for(int i = 0 ; i < dataList.size() ; i++) {
+			String[] inputDataArray = dataList.get(i).split(",");
+			String inputData = inputDataArray[0] + "," + inputDataArray[1] + "," + inputDataArray[2];
+			String idealOutput = highAndLowList.get(i / 5);
+			String finalResult = inputData + "," + idealOutput;
+			finalResultList.add(finalResult);
+		}
+		
 		/*
 		 * 将排序改为正序
 		 */
-		Collections.reverse(resultList);
+		Collections.reverse(finalResultList);
 		
-		return resultList;
+		return finalResultList;
 	}
 }

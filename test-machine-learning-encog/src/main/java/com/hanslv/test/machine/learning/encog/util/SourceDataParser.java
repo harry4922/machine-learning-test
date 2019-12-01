@@ -27,7 +27,7 @@ import org.encog.util.csv.CSVFormat;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
-import org.nd4j.linalg.dataset.api.preprocessor.NormalizerStandardize;
+import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
 import org.nd4j.linalg.factory.Nd4j;
 
 import com.hanslv.test.machine.learning.encog.constants.MLConstants;
@@ -228,7 +228,8 @@ public class SourceDataParser {
 		/*
 		 * 数据标准化器
 		 */
-		NormalizerStandardize normalizer = new NormalizerStandardize();
+//		NormalizerStandardize normalizer = new NormalizerStandardize();
+		NormalizerMinMaxScaler normalizer = new NormalizerMinMaxScaler(-1 , 1);
 		
 		/*
 		 * 实例化数据集合迭代器

@@ -33,6 +33,14 @@
 	    <artifactId>nd4j-native-platform</artifactId>
 	    <version>1.0.0-alpha</version>
 	</dependency>
+	
+	<!-- https://mvnrepository.com/artifact/org.deeplearning4j/deeplearning4j-ui -->
+	<dependency>
+	    <groupId>org.deeplearning4j</groupId>
+	    <artifactId>deeplearning4j-ui_2.11</artifactId>
+	    <version>1.0.0-alpha</version>
+	</dependency>
+	
   	
   </dependencies>
 </project>

@@ -7,7 +7,6 @@ import org.deeplearning4j.nn.conf.NeuralNetConfiguration.ListBuilder;
 import org.deeplearning4j.nn.conf.layers.FeedForwardLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
-import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.learning.config.IUpdater;
 
 /**
@@ -87,7 +86,7 @@ public class NNFactory {
         /*
          * 设置监听器
          */
-        network.setListeners(new ScoreIterationListener(1));
+//        network.setListeners(new ScoreIterationListener(1));
         
         return network;
 	}
