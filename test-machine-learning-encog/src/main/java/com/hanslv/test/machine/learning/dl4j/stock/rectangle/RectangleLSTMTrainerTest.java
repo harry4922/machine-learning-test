@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 import com.hanslv.test.machine.learning.dl4j.stock.rectangle.RectangleLSTMTrainer.ForecastResult;
 
 public class RectangleLSTMTrainerTest {
-	static LocalDate endDate = LocalDate.parse("2019-08-23");
+	static LocalDate endDate = LocalDate.parse("2019-12-15");
 	static int trueCount;
 	static int mainCount;
 	

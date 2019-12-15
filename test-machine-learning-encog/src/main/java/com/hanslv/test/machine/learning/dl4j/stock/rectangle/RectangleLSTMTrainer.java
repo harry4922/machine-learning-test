@@ -53,7 +53,7 @@ public class RectangleLSTMTrainer {
 		 * 数据准备
 		 */
 		int stepLong = trainStepSize + testStepSize;//总步长=训练数据步长+测试数据步长
-		List<String> allDataList = DbUtil.getRectangleArea(stockId, stepLong , endDate , batchSize , singleBatchSize , true);
+		List<String> allDataList = DbUtil.getRectangleArea(stockId, stepLong , endDate , batchSize , singleBatchSize , false);
 		if(allDataList.size() != stepLong) {
 //			System.err.println("当前数据有误：" + stockId + "," + endDate);
 //			System.exit(0);
