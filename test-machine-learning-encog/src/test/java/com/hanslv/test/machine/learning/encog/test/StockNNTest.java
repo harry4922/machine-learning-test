@@ -2,7 +2,6 @@ package com.hanslv.test.machine.learning.encog.test;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
