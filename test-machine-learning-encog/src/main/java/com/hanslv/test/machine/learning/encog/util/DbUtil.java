@@ -338,6 +338,64 @@ public class DbUtil {
 	}
 	
 	/**
+	 * 获取指定股票指定时间之前的指定数量数据
+	 * @param stockId
+	 * @param endDate
+	 * @param dataSize
+	 * @return
+	 */
+	public static List<String> getPriceInfo(String stockId , String endDate , int dataSize){
+		List<String> resultList = new ArrayList<>();
+		String sql = 
+				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"UNION " + 
+				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"UNION " + 
+				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"UNION " + 
+				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"UNION " + 
+				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"UNION " + 
+				"SELECT stock_price_date , stock_price_volume , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price , stock_price_end_price FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"ORDER BY stock_price_date DESC LIMIT ?";
+		Connection conn = JdbcUtil.getJdbcConnection();
+		try(PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setString(1, stockId);
+			pstmt.setString(2, endDate);
+			pstmt.setString(3, stockId);
+			pstmt.setString(4, endDate);
+			pstmt.setString(5, stockId);
+			pstmt.setString(6, endDate);
+			pstmt.setString(7, stockId);
+			pstmt.setString(8, endDate);
+			pstmt.setString(9, stockId);
+			pstmt.setString(10, endDate);
+			pstmt.setString(11, stockId);
+			pstmt.setString(12, endDate);
+			pstmt.setInt(13 , dataSize);
+			try(ResultSet resultSet = pstmt.executeQuery()){
+				while(resultSet.next()) {
+					String stockPriceDate = resultSet.getString(1);
+					String stockPriceVolume = resultSet.getString(2);
+					String stockPriceHighestPrice = resultSet.getString(3);
+					String stockPriceLowestPrice = resultSet.getString(4);
+					String stockPriceStartPrice = resultSet.getString(5);
+					String stockPriceEndPrice = resultSet.getString(6);
+					
+					String result = stockPriceDate + "," + stockPriceVolume + "," + stockPriceHighestPrice + "," + stockPriceLowestPrice + "," + stockPriceStartPrice + "," + stockPriceEndPrice;
+					resultList.add(result);
+				}
+			}
+		}catch(SQLException e) {e.printStackTrace();
+		}finally {JdbcUtil.closeJdbcConnection();}
+		
+		Collections.reverse(resultList);
+		return resultList;
+	}
+	
+	
+	/**
 	 * 根据股票ID获取预测股票矩形面积List
 	 * @param stockId
 	 * @param stepLong = 训练步长+测试步长
@@ -544,7 +602,7 @@ public class DbUtil {
 	 * @param forwardOrBackward true-日期向前移动，false-日期向后移动
 	 * @return
 	 */
-	private static String changeDate(String stockId , String currentDate , int limit , boolean forwardOrBackward) {
+	public static String changeDate(String stockId , String currentDate , int limit , boolean forwardOrBackward) {
 		String resultDate = "";
 		String sql = forwardOrBackward ?
 				"SELECT stock_price_date FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date < ? " + 
@@ -624,7 +682,7 @@ public class DbUtil {
 	public static void main(String[] args) {
 //		for(String maxAndLowStr : getRectangleArea("463" , 2 , "2019-10-25" , 5 , 5 , false)) System.out.println(maxAndLowStr);
 //		for(String maxAndLowStr : getRectangleMaxAndLow("463" , 2 , "2019-10-25" , 5 , 5 , false)) System.out.println(maxAndLowStr);
-		System.out.println(changeDate("1" , "2019-11-15" , 5 , true));
+		System.out.println(changeDate("1" , "2019-11-06" , 5 , false));
 		
 	}
 }

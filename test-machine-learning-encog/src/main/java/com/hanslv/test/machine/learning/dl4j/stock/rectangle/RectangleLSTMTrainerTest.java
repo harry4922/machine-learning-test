@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 import com.hanslv.test.machine.learning.dl4j.stock.rectangle.RectangleLSTMTrainer.ForecastResult;
 
 public class RectangleLSTMTrainerTest {
-	static LocalDate endDate = LocalDate.parse("2019-12-15");
+	static LocalDate endDate = LocalDate.parse("2019-11-22");
 	static int trueCount;
 	static int mainCount;
 	
@@ -21,7 +21,7 @@ public class RectangleLSTMTrainerTest {
 			
 			if(result != ForecastResult.EXCLUDE)
 				System.out.println(new BigDecimal(trueCount).divide(new BigDecimal(mainCount) , 2 , BigDecimal.ROUND_HALF_UP));
-			try {TimeUnit.SECONDS.sleep(1);} catch (InterruptedException e) {e.printStackTrace();}
+			try {TimeUnit.SECONDS.sleep(2);} catch (InterruptedException e) {e.printStackTrace();}
 		}
 	}
 }

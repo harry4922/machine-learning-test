@@ -1,5 +1,6 @@
 package com.hanslv.test.machine.learning.dl4j.stock.rectangle;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -46,9 +47,12 @@ public class RectangleLSTMTrainer {
 	static int batchSize = 5;//批次长度
 	static int epoch = 10;//训练次数
 	static double errorLimit = 0.125;//误差容忍范围%
+	static double buyErrorLimit = 1;//买入损失容忍范围
+	static double suggestRate = 0.02;//建议盈利百分比
 	
 	
 	public static ForecastResult train(String stockId , String endDate) {
+//		System.out.println("正在计算：" + stockId + " endDate=" + endDate);
 		/*
 		 * 数据准备
 		 */
@@ -89,7 +93,7 @@ public class RectangleLSTMTrainer {
 		/*
 		 * 判断预测结果
 		 */
-		return docheck(testDataList , lstmNetwork , iteratorList.get(1));
+		return docheck(testDataList , lstmNetwork , iteratorList.get(1) , endDate , stockId);
 	}
 	
 	public static enum ForecastResult{
@@ -100,7 +104,7 @@ public class RectangleLSTMTrainer {
 	 * 判断预测结果是否准确
 	 * @return
 	 */
-	private static ForecastResult docheck(List<String> testDataList , MultiLayerNetwork lstmNetwork , DataSetIterator forecastData) {
+	private static ForecastResult docheck(List<String> testDataList , MultiLayerNetwork lstmNetwork , DataSetIterator forecastData , String endDate , String stockId) {
 		/*
 		 * 获取当前标准化器
 		 */
@@ -108,26 +112,57 @@ public class RectangleLSTMTrainer {
 		
 		int trueCounter = 0;
 		int testTotal = forecastData.numExamples() - 1;
+		double checkDataBuffer = 0;
 		
 		/*
 		 * 首先执行训练步长-1次预测，并判断结果是否准确
 		 */
 		for(int i = 0 ; i < testTotal ; i++) {
 			double result = doForecast(lstmNetwork , forecastData.next(1) , normalizerStandardize);
-			double checkData = Double.parseDouble(testDataList.get(i).split(",")[1]);
-//			System.out.println("Test: " + result + "," + checkData);
-			if(Math.abs(result - checkData) <= errorLimit) trueCounter++;
+			checkDataBuffer = Double.parseDouble(testDataList.get(i).split(",")[1]);
+			if(Math.abs(result - checkDataBuffer) <= errorLimit) trueCounter++;
 		}
 		
 		/*
 		 * 前几次预测都准确则预测当前时间的价格
 		 */
 		if(trueCounter == testTotal) {
+			/*
+			 * 2019-12-16日修改，在插入结果前先判断均线斜率
+			 */
+			BigDecimal averageSlope = new BigDecimal(DbUtil.get89Average(stockId, endDate)[1]);
+			if(averageSlope.compareTo(BigDecimal.ZERO) < 0) return ForecastResult.EXCLUDE;
+			
+			/*
+			 * 计算结果是否准确
+			 */
 			double result = doForecast(lstmNetwork , forecastData.next(1) , normalizerStandardize);
-			double checkData = Double.parseDouble(testDataList.get(testTotal).split(",")[1]);
-			System.out.println("!!!: " + result + "," + checkData);
-			if(Math.abs(result - checkData) <= errorLimit) return ForecastResult.TRUE;
-			else return ForecastResult.FALSE;
+			/*
+			 * 2019-12-17修改，只保留预测矩形面积小于等于当前矩形面积的预测结果
+			 */
+			if(result <= checkDataBuffer) {
+				/*
+				 * 2019-12-17修改，筛选当前价格接近当前矩形最低价的结果
+				 * 首先获取endDate之前的singleBatchSize * (batchSize - 1)个数据，
+				 * 获取其中的最低价smallBatchLow
+				 * 获取当前的价格currentStockPrice
+				 * 判断(currentStockPrice-smallBatchLow)/currentStockPrice <= buyErrorLimit
+				 */
+				BigDecimal smallBatchLow = new BigDecimal(DbUtil.getRectangleMaxAndLow(stockId , 1 , endDate , batchSize - 1 , singleBatchSize , false).get(0).split(",")[1]);
+				BigDecimal currentStockPrice = new BigDecimal(DbUtil.getPriceInfo(stockId, endDate, 1).get(0).split(",")[5]);
+//				if(currentStockPrice.compareTo(smallBatchLow) >= 0 && currentStockPrice.multiply(BigDecimal.ONE.subtract(new BigDecimal(buyErrorLimit))).compareTo(smallBatchLow) >= 0) {
+				if(currentStockPrice.subtract(smallBatchLow).divide(currentStockPrice , 3 , BigDecimal.ROUND_HALF_UP).compareTo(new BigDecimal(buyErrorLimit)) <= 0) {
+					/*
+					 * 2019-12-17修改，判断预测矩形最终价格是否大于所给的建议买入价格
+					 * 获取endDate + 1数据量日期的singleBatchSize - 1的最高价forcastHigh；改：因为无法预测到最高价，因此改为获取最后一天的收盘价
+					 */
+					String checkDate = DbUtil.changeDate(stockId, endDate, singleBatchSize , false);//日期向后移动singleBatchSize个数据量
+					BigDecimal lastPrice = new BigDecimal(DbUtil.getPriceInfo(stockId, checkDate , 1).get(0).split(",")[5]);
+					System.out.println("stockId=" + stockId + " Date=" + endDate + " suggestBuyPrice=" + currentStockPrice + " lastPrice=" + lastPrice);
+					if(lastPrice.compareTo(currentStockPrice) >= 0) return ForecastResult.TRUE;
+					else return ForecastResult.FALSE;
+				}
+			}
 		}
 		return ForecastResult.EXCLUDE;
 	}
