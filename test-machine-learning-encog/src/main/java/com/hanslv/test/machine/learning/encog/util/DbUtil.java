@@ -554,7 +554,7 @@ public class DbUtil {
 				"SELECT stock_price_end_price , stock_price_date FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
 				"UNION " + 
 				"SELECT stock_price_end_price , stock_price_date FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
-				"ORDER BY stock_price_date DESC LIMIT 90";
+				"ORDER BY stock_price_date DESC LIMIT 94";
 		/*
 		 * 获取当前股票90天内的价格
 		 */
@@ -578,12 +578,12 @@ public class DbUtil {
 		}catch(SQLException e) {e.printStackTrace();}finally {JdbcUtil.closeJdbcConnection();}
 		
 		/*
-		 * 获取当天的89天均线值和前一天的89天均线值
+		 * 获取当天的89天均线值和前五天的89天均线值
 		 */
 		BigDecimal current89Total = new BigDecimal(0);
 		BigDecimal last89Total = new BigDecimal(0);
-		for(int i = 0 ; i < stockPriceInfoList.size() - 1 ; i++) current89Total = current89Total.add(new BigDecimal(stockPriceInfoList.get(i)));
-		for(int i = 1 ; i < stockPriceInfoList.size() ; i++) last89Total = last89Total.add(new BigDecimal(stockPriceInfoList.get(i)));
+		for(int i = 0 ; i < stockPriceInfoList.size() - 5 ; i++) current89Total = current89Total.add(new BigDecimal(stockPriceInfoList.get(i)));
+		for(int i = 5 ; i < stockPriceInfoList.size() ; i++) last89Total = last89Total.add(new BigDecimal(stockPriceInfoList.get(i)));
 		BigDecimal current89Average = current89Total.divide(new BigDecimal(89) , 2 , BigDecimal.ROUND_HALF_UP);
 		BigDecimal last89Average = last89Total.divide(new BigDecimal(89) , 2 , BigDecimal.ROUND_HALF_UP);
 		
