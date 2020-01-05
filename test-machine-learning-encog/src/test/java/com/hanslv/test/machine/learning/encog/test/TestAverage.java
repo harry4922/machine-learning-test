@@ -14,7 +14,7 @@ public class TestAverage {
 			/*
 			 * 获取每只89天均线斜率大于0的股票
 			 */
-			BigDecimal averageSlope = new BigDecimal(DbUtil.get89Average(i + "" , date)[1]);
+			BigDecimal averageSlope = new BigDecimal(DbUtil.getAverage(i + "" , date , 89)[1]);
 			if(averageSlope.compareTo(BigDecimal.ZERO) > 0) {
 				mainCounter++;
 				/*

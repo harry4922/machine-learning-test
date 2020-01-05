@@ -130,7 +130,7 @@ public class RectangleLSTMTrainer {
 			/*
 			 * 2019-12-16日修改，在插入结果前先判断均线斜率
 			 */
-			BigDecimal averageSlope = new BigDecimal(DbUtil.get89Average(stockId, endDate)[1]);
+			BigDecimal averageSlope = new BigDecimal(DbUtil.getAverage(stockId, endDate , 89)[1]);
 			if(averageSlope.compareTo(BigDecimal.ZERO) < 0) return ForecastResult.EXCLUDE;
 			
 			/*

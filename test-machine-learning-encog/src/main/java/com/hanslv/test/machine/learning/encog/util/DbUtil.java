@@ -563,12 +563,12 @@ public class DbUtil {
 	
 	
 	/**
-	 * 获取股票指定日期的89天均线值和斜率
+	 * 获取股票指定日期的N天均线值和斜率
 	 * @param stockId
 	 * @param endDate
 	 * @return
 	 */
-	public static String[] get89Average(String stockId , String endDate) {
+	public static String[] getAverage(String stockId , String endDate , int averageType) {
 		List<String> stockPriceInfoList = new ArrayList<>();
 		String sql = 
 				"SELECT stock_price_end_price , stock_price_date FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
@@ -582,7 +582,7 @@ public class DbUtil {
 				"SELECT stock_price_end_price , stock_price_date FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
 				"UNION " + 
 				"SELECT stock_price_end_price , stock_price_date FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
-				"ORDER BY stock_price_date DESC LIMIT 94";
+				"ORDER BY stock_price_date DESC LIMIT ?";
 		/*
 		 * 获取当前股票90天内的价格
 		 */
@@ -600,6 +600,7 @@ public class DbUtil {
 			pstmt.setString(10 , endDate);
 			pstmt.setString(11 , stockId);
 			pstmt.setString(12 , endDate);
+			pstmt.setInt(13 , averageType + averageType/10);
 			try(ResultSet resultSet = pstmt.executeQuery()){
 				while(resultSet.next()) stockPriceInfoList.add(resultSet.getString(1));
 			}
@@ -608,12 +609,12 @@ public class DbUtil {
 		/*
 		 * 获取当天的89天均线值和前5天的89天均线值
 		 */
-		BigDecimal current89Total = new BigDecimal(0);
-		BigDecimal last89Total = new BigDecimal(0);
-		for(int i = 0 ; i < stockPriceInfoList.size() - 5 ; i++) current89Total = current89Total.add(new BigDecimal(stockPriceInfoList.get(i)));
-		for(int i = 5 ; i < stockPriceInfoList.size() ; i++) last89Total = last89Total.add(new BigDecimal(stockPriceInfoList.get(i)));
-		BigDecimal current89Average = current89Total.divide(new BigDecimal(89) , 2 , BigDecimal.ROUND_HALF_UP);
-		BigDecimal last89Average = last89Total.divide(new BigDecimal(89) , 2 , BigDecimal.ROUND_HALF_UP);
+		BigDecimal currentTotal = new BigDecimal(0);
+		BigDecimal lastTotal = new BigDecimal(0);
+		for(int i = 0 ; i < stockPriceInfoList.size() - averageType/10 ; i++) currentTotal = currentTotal.add(new BigDecimal(stockPriceInfoList.get(i)));
+		for(int i = averageType/10 ; i < stockPriceInfoList.size() ; i++) lastTotal = lastTotal.add(new BigDecimal(stockPriceInfoList.get(i)));
+		BigDecimal current89Average = currentTotal.divide(new BigDecimal(averageType) , 2 , BigDecimal.ROUND_HALF_UP);
+		BigDecimal last89Average = lastTotal.divide(new BigDecimal(averageType) , 2 , BigDecimal.ROUND_HALF_UP);
 		
 		BigDecimal slope = current89Average.subtract(last89Average);
 		
@@ -767,7 +768,6 @@ public class DbUtil {
 			if(highestPrice.compareTo(buyPrice.multiply(rate.add(BigDecimal.ONE))) > 0) return "true";
 		}
 		if(lastEndPrice.compareTo(buyPrice) > 0) return "true"; 
-		System.err.println("stockID=" + stockId + "，date=" + date + "预测错误");
 		return "false";
 	}
 	
@@ -780,7 +780,7 @@ public class DbUtil {
 	 * @param dayCount
 	 * @return
 	 */
-	public static boolean turnoverCheck(String stockId , String endDate , int dayCount) {
+	public static boolean turnoverCheck(String stockId , String endDate , int dayCount , BigDecimal limit) {
 		String sql = 
 				"SELECT stock_id , stock_price_date , stock_price_turnover FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
 				"SELECT stock_id , stock_price_date , stock_price_turnover FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
@@ -791,7 +791,7 @@ public class DbUtil {
 				"ORDER BY stock_price_date DESC LIMIT ?";
 		Connection conn = JdbcUtil.getJdbcConnection();
 		BigDecimal currentTurnover = null;
-		BigDecimal maxTurnover = null;
+		BigDecimal maxTurnover = BigDecimal.ZERO;
 		try(PreparedStatement pstmt = conn.prepareStatement(sql);){
 			pstmt.setString(1 , stockId);
 			pstmt.setString(2 , endDate);
@@ -809,10 +809,7 @@ public class DbUtil {
 			try(ResultSet resultSet = pstmt.executeQuery()){
 				while(resultSet.next()) {
 					BigDecimal turnover = new BigDecimal(resultSet.getString(3));
-					if(currentTurnover == null && maxTurnover == null) {
-						currentTurnover = turnover;
-						maxTurnover = turnover;
-					}
+					if(currentTurnover == null) currentTurnover = turnover;
 					else {
 						if(maxTurnover.compareTo(turnover) < 0) maxTurnover = turnover;
 					}
@@ -823,7 +820,7 @@ public class DbUtil {
 		}finally {
 			JdbcUtil.closeJdbcConnection();
 		}
-		if(currentTurnover.compareTo(maxTurnover) >= 0) return false;
+		if(currentTurnover.compareTo(maxTurnover.multiply(limit.add(BigDecimal.ONE))) > 0) return false;
 		return true;
 	}
 	
@@ -873,13 +870,136 @@ public class DbUtil {
 	}
 	
 	
+	public static List<String> jaegerBDataSource(String stockId , String endDate , int dayCount){
+		String sql = 
+				"SELECT stock_id , stock_price_date , stock_price_turnover , stock_price_end_price FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
+				"SELECT stock_id , stock_price_date , stock_price_turnover , stock_price_end_price FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
+				"SELECT stock_id , stock_price_date , stock_price_turnover , stock_price_end_price FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
+				"SELECT stock_id , stock_price_date , stock_price_turnover , stock_price_end_price FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
+				"SELECT stock_id , stock_price_date , stock_price_turnover , stock_price_end_price FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
+				"SELECT stock_id , stock_price_date , stock_price_turnover , stock_price_end_price FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"ORDER BY stock_price_date DESC LIMIT ?";
+		Connection conn = JdbcUtil.getJdbcConnection();
+		List<String> resultListBuffer = new ArrayList<>();
+		try(PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setString(1 , stockId);
+			pstmt.setString(2 , endDate);
+			pstmt.setString(3 , stockId);
+			pstmt.setString(4 , endDate);
+			pstmt.setString(5 , stockId);
+			pstmt.setString(6 , endDate);
+			pstmt.setString(7 , stockId);
+			pstmt.setString(8 , endDate);
+			pstmt.setString(9 , stockId);
+			pstmt.setString(10 , endDate);
+			pstmt.setString(11 , stockId);
+			pstmt.setString(12 , endDate);
+			pstmt.setInt(13 , dayCount + 1);
+			try(ResultSet resultSet = pstmt.executeQuery()){
+				while(resultSet.next()) resultListBuffer.add(resultSet.getString(3) + "," + resultSet.getString(4));
+			}
+		}catch(SQLException e) {
+				e.printStackTrace();
+		}finally {
+			JdbcUtil.closeJdbcConnection();
+		}
+		
+		Collections.reverse(resultListBuffer);
+		
+		List<String> resultList = new ArrayList<>();
+		String lastData = null;
+		for(String data : resultListBuffer) {
+			if(lastData == null) lastData = data;
+			else {
+				resultList.add(data + "," + lastData);
+				lastData = data;
+			}
+		}
+		return resultList;
+	}
+	
+	/**
+	 * 查询股票基本信息
+	 * @param stockId
+	 * @return
+	 */
+	public static String findStockInfo(String stockId) {
+		String stockInfo = "";
+		String sql = "SELECT * FROM tab_stock_info WHERE stock_id = ?";
+		Connection conn = JdbcUtil.getJdbcConnection();
+		try(PreparedStatement pstmt = conn.prepareStatement(sql);){
+			pstmt.setString(1 , stockId);
+			try(ResultSet resultSet = pstmt.executeQuery();){
+				int count = 0;
+				while(resultSet.next()) {
+					if(count++ > 1) return null;
+					String stockCode = resultSet.getString(2);
+					String stockName = resultSet.getString(3);
+					stockInfo = stockId + "," + stockCode + "," + stockName;
+				}
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}finally {
+			JdbcUtil.closeJdbcConnection();
+		}
+		return stockInfo;
+	}
 	
 	
-	
-	
-	
-	
-	
+	/**
+	 * 获取当前股票在日期之前指定长度区间内的最大值、最小值
+	 * @param stockId
+	 * @param endDate
+	 * @param dayLength
+	 * @return
+	 */
+	public static BigDecimal[] jaegerMaxAndLow(String stockId , String endDate , int dayLength) {
+		Connection conn = JdbcUtil.getJdbcConnection();
+		String sql = 
+				"SELECT stock_price_highest_price , stock_price_lowest_price , stock_price_date FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"UNION " + 
+				"SELECT stock_price_highest_price , stock_price_lowest_price , stock_price_date FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"UNION " + 
+				"SELECT stock_price_highest_price , stock_price_lowest_price , stock_price_date FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"UNION " + 
+				"SELECT stock_price_highest_price , stock_price_lowest_price , stock_price_date FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"UNION " + 
+				"SELECT stock_price_highest_price , stock_price_lowest_price , stock_price_date FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"UNION " + 
+				"SELECT stock_price_highest_price , stock_price_lowest_price , stock_price_date FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"ORDER BY stock_price_date DESC LIMIT ?";
+		BigDecimal max = null;
+		BigDecimal min = null;
+		try(PreparedStatement pstmt = conn.prepareStatement(sql)){
+			pstmt.setString(1 , stockId);
+			pstmt.setString(2 , endDate);
+			pstmt.setString(3 , stockId);
+			pstmt.setString(4 , endDate);
+			pstmt.setString(5 , stockId);
+			pstmt.setString(6 , endDate);
+			pstmt.setString(7 , stockId);
+			pstmt.setString(8 , endDate);
+			pstmt.setString(9 , stockId);
+			pstmt.setString(10 , endDate);
+			pstmt.setString(11 , stockId);
+			pstmt.setString(12 , endDate);
+			pstmt.setInt(13 , dayLength);
+			try(ResultSet resultSet = pstmt.executeQuery()){
+				while(resultSet.next()) {
+					/*
+					 * 获取当前矩形价格的最高、最低
+					 */
+					BigDecimal currentMax = new BigDecimal(resultSet.getString(1));
+					BigDecimal currentMin = new BigDecimal(resultSet.getString(2));
+					if(max == null || currentMax.compareTo(max) > 0) max = currentMax;
+					if(min == null || currentMin.compareTo(min) < 0) min = currentMin;
+				}
+			}
+		}catch(SQLException e) {e.printStackTrace();}
+		
+		return new BigDecimal[]{max , min};
+	}
 	
 	
 	
@@ -898,6 +1018,7 @@ public class DbUtil {
 //		System.out.println(get89Average("1" , "2019-12-20")[1]);
 //		for(String parsedMaxAndLow : parseMaxAndLow("1" , 5 , "2019-11-29" , 1 , 5 , true)) System.out.println(parsedMaxAndLow);
 //		for(String result : getInfo("1" , "2019-12-31" , 10))System.out.println(result);
+//		for(String result : jaegerBDataSource("1" , "2019-12-31" , 10)) System.out.println(result);
 		
 	}
 }
