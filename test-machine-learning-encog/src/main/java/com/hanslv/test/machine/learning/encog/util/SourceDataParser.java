@@ -28,6 +28,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
+import org.nd4j.linalg.dataset.api.preprocessor.NormalizerStandardize;
 import org.nd4j.linalg.factory.Nd4j;
 
 import com.hanslv.test.machine.learning.encog.constants.MLConstants;
@@ -242,6 +243,7 @@ public class SourceDataParser {
 		 */
 		normalizer.fitLabel(true);//指定是否标准化idealOutput
 		normalizer.fit(trainDataIterator);
+//		normalizer.fit(testDataIterator);
 		
 		/*
 		 * 给训练数据集合配置标准化器

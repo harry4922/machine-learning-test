@@ -877,12 +877,12 @@ public class DbUtil {
 	
 	public static List<String> jaegerBDataSource(String stockId , String endDate , int dayCount){
 		String sql = 
-				"SELECT stock_id , stock_price_date , stock_price_turnover_rate , stock_price_end_price , stock_price_highest_price FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
-				"SELECT stock_id , stock_price_date , stock_price_turnover_rate , stock_price_end_price , stock_price_highest_price FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
-				"SELECT stock_id , stock_price_date , stock_price_turnover_rate , stock_price_end_price , stock_price_highest_price FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
-				"SELECT stock_id , stock_price_date , stock_price_turnover_rate , stock_price_end_price , stock_price_highest_price FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
-				"SELECT stock_id , stock_price_date , stock_price_turnover_rate , stock_price_end_price , stock_price_highest_price FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
-				"SELECT stock_id , stock_price_date , stock_price_turnover_rate , stock_price_end_price , stock_price_highest_price FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
+				"SELECT stock_id , stock_price_date , stock_price_turnover_rate , stock_price_end_price , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price FROM tab_stock_price_shangzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
+				"SELECT stock_id , stock_price_date , stock_price_turnover_rate , stock_price_end_price , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price FROM tab_stock_price_shangzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
+				"SELECT stock_id , stock_price_date , stock_price_turnover_rate , stock_price_end_price , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price FROM tab_stock_price_shangzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
+				"SELECT stock_id , stock_price_date , stock_price_turnover_rate , stock_price_end_price , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price FROM tab_stock_price_shenzheng_0001 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
+				"SELECT stock_id , stock_price_date , stock_price_turnover_rate , stock_price_end_price , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price FROM tab_stock_price_shenzheng_0002 WHERE stock_id = ? AND stock_price_date <= ? UNION " + 
+				"SELECT stock_id , stock_price_date , stock_price_turnover_rate , stock_price_end_price , stock_price_highest_price , stock_price_lowest_price , stock_price_start_price FROM tab_stock_price_shenzheng_0003 WHERE stock_id = ? AND stock_price_date <= ? " + 
 				"ORDER BY stock_price_date DESC LIMIT ?";
 		Connection conn = JdbcUtil.getJdbcConnection();
 		List<String> resultListBuffer = new ArrayList<>();
@@ -901,7 +901,7 @@ public class DbUtil {
 			pstmt.setString(12 , endDate);
 			pstmt.setInt(13 , dayCount + 1);
 			try(ResultSet resultSet = pstmt.executeQuery()){
-				while(resultSet.next()) resultListBuffer.add(resultSet.getString(3) + "," + resultSet.getString(4) + "," + resultSet.getString(5));
+				while(resultSet.next()) resultListBuffer.add(resultSet.getString(3) + "," + resultSet.getString(4) + "," + resultSet.getString(5) + "," + resultSet.getString(6) + "," + resultSet.getString(7));
 			}
 		}catch(SQLException e) {
 				e.printStackTrace();
