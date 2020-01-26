@@ -1,5 +1,6 @@
 package com.hanslv.test.machine.learning.encog.util;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -419,11 +420,20 @@ public class DbUtil {
 		/*
 		 * 将后一天结果拼接到前一天
 		 */
-		for(int i = 0 ; i < resultListBuffer.size() ; i++) {
-			if(!testOrNot && i == 0) resultList.add(resultListBuffer.get(i) + "," + resultListBuffer.get(i));//包含当前日信息，并以任意值补位
-			if((i + 1) < resultListBuffer.size())
-				resultList.add(resultListBuffer.get(i + 1) + "," + resultListBuffer.get(i));
+		String buffer = "";
+		for(String areaSize : resultListBuffer) {
+			if("".equals(buffer)) {
+				if(testOrNot) buffer = areaSize;
+				else {
+					resultList.add(areaSize + "," + areaSize);//非测试信息，以当前信息补位
+					buffer = areaSize;
+				}
+			}else {
+				resultList.add(areaSize + "," + buffer);
+				buffer = areaSize;
+			}
 		}
+		
 		
 		Collections.reverse(resultList);
 		return resultList;
@@ -457,7 +467,7 @@ public class DbUtil {
 		 */
 		if(testOrNot) {
 			/*
-			 * 测试日期后移5个价格数据量
+			 * 将日期向以后推移一个步长
 			 */
 			endDate = changeDate(stockId , endDate , batchSize , false);
 			
@@ -526,7 +536,7 @@ public class DbUtil {
 			}catch(SQLException e) {e.printStackTrace();}
 			
 			/*
-			 * 将日期前移5个日期单位
+			 * 将日期向以前推移一个步长
 			 */
 			endDate = changeDate(stockId , endDate , batchSize , true);
 		}
@@ -1013,21 +1023,16 @@ public class DbUtil {
 	
 	
 	
-	
-	
-	
-	
-	
-	
 	//String stockId , int stepLong , String endDate , int rectangleLong , int singleBatchSize , boolean testOrNot
 	public static void main(String[] args) {
 //		for(String maxAndLowStr : getRectangleArea("463" , 2 , "2019-10-25" , 5 , 5 , false)) System.out.println(maxAndLowStr);
 //		for(String maxAndLowStr : getRectangleMaxAndLow("463" , 2 , "2019-10-25" , 5 , 5 , false)) System.out.println(maxAndLowStr);
 //		System.out.println(changeDate("1" , "2019-11-06" , 5 , false));
-		System.out.println(getAverage("1" , "2019-12-20" , 89)[0]);
+//		System.out.println(getAverage("1" , "2019-12-20" , 89)[0]);
 //		for(String parsedMaxAndLow : parseMaxAndLow("1" , 5 , "2019-11-29" , 1 , 5 , true)) System.out.println(parsedMaxAndLow);
 //		for(String result : getInfo("1" , "2019-12-31" , 10))System.out.println(result);
 //		for(String result : jaegerBDataSource("1" , "2019-12-31" , 10)) System.out.println(result);
-		
+		for(String result : getRectangleArea("1" , 2 , "2019-06-21" , 5 , 5 , false)) System.out.println(result);
+		//String stockId , int stepLong , String endDate , int batchSize , int singleBatchSize , boolean testOrNot
 	}
 }

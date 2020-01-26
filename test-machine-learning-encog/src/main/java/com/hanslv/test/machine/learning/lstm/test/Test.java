@@ -10,6 +10,7 @@ import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
+import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.Sgd;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -57,6 +58,14 @@ public class Test {
 
         // create dataset object
         DataSet ds = new DataSet(input, labels);
+        
+        //Test
+        NormalizerMinMaxScaler preProcessor = new NormalizerMinMaxScaler();
+        preProcessor.fitLabel(true);
+        preProcessor.fit(ds);
+        preProcessor.transform(ds);
+        System.out.println(ds);
+        
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
             .updater(new Sgd(0.1))
@@ -85,7 +94,7 @@ public class Test {
 
         MultiLayerNetwork net = new MultiLayerNetwork(conf);
         net.init();
-
+        
         // add an listener which outputs the error every 100 parameter updates
 //        net.setListeners(new ScoreIterationListener(100));
 
@@ -100,7 +109,12 @@ public class Test {
 
         // create output for every training sample
         INDArray output = net.output(ds.getFeatures());
-        System.out.println(output);
+        INDArray features = ds.getFeatures();
+        DataSet result = new DataSet(features , output);
+        preProcessor.revert(result);
+        System.out.println(result);
+        
+//        System.out.println(output);
 
         // let Evaluation prints stats how often the right output had the highest value
         Evaluation eval = new Evaluation();

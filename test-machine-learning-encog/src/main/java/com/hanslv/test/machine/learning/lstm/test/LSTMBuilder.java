@@ -1,13 +1,13 @@
 package com.hanslv.test.machine.learning.lstm.test;
 
-import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.FeedForwardLayer;
-import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.conf.layers.GravesLSTM;
+import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.nd4j.linalg.activations.Activation;
-import org.nd4j.linalg.learning.config.AdaGrad;
 import org.nd4j.linalg.learning.config.Adam;
+import org.nd4j.linalg.lossfunctions.LossFunctions;
 
 import com.hanslv.test.machine.learning.dl4j.rnn.NNFactory;
 
@@ -17,32 +17,25 @@ import com.hanslv.test.machine.learning.dl4j.rnn.NNFactory;
  *
  */
 public class LSTMBuilder {
-	
-	/**
-	 * 构建神经网络
-	 * @param inputSize
-	 * @param idealOutputSize
-	 * @return
-	 */
 	public static MultiLayerNetwork build(int inputSize , int idealOutputSize) {
-		FeedForwardLayer hideLayerA = new DenseLayer.Builder()
+		FeedForwardLayer hideLayerA = new GravesLSTM.Builder()
 				.nIn(inputSize)
-				.nOut(idealOutputSize * 2)
-				.activation(Activation.SIGMOID)
+				.nOut(100)
+				.activation(Activation.SOFTSIGN)
 				.build();
-		FeedForwardLayer hideLayerB = new DenseLayer.Builder()
-				.nIn(idealOutputSize * 2)
-				.nOut(idealOutputSize * 2)
-				.activation(Activation.SIGMOID)
+		FeedForwardLayer hideLayerB = new GravesLSTM.Builder()
+				.nOut(100)
+				.activation(Activation.SOFTSIGN)
 				.build();
-		
-		FeedForwardLayer outputLayer = new OutputLayer.Builder()
-				.nIn(idealOutputSize * 2)
+		FeedForwardLayer hideLayerC = new GravesLSTM.Builder()
+				.nOut(100)
+				.activation(Activation.RELU)
+				.build();
+		FeedForwardLayer outputLayer = new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE)
 				.nOut(idealOutputSize)
-				.activation(Activation.SIGMOID)
+				.activation(Activation.IDENTITY)
 				.build();
-		
-		return NNFactory.buildRNN(1000000 , WeightInit.XAVIER , new Adam(0.1 , 0.9 , 0.9999 , 0.0000000001) , hideLayerA , hideLayerB , outputLayer);
-//		return NNFactory.buildRNN(1000000 , WeightInit.XAVIER , new AdaGrad() , hideLayerA , outputLayer);
+//		return NNFactory.buildRNN(12345 , WeightInit.XAVIER , new RmsProp(0.01) , hideLayerA , hideLayerB , outputLayer);
+		return NNFactory.buildRNN(12345 , WeightInit.XAVIER , new Adam(0.01) , hideLayerA , hideLayerB , hideLayerC , outputLayer);
 	}
 }

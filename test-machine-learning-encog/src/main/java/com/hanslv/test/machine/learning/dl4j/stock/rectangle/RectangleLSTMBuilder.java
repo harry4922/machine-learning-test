@@ -4,7 +4,7 @@ import java.util.Map;
 
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.FeedForwardLayer;
-import org.deeplearning4j.nn.conf.layers.LSTM;
+import org.deeplearning4j.nn.conf.layers.GravesLSTM;
 import org.deeplearning4j.nn.conf.layers.RnnOutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
@@ -34,30 +34,32 @@ public class RectangleLSTMBuilder {
 	 * @return
 	 */
 	public static MultiLayerNetwork build(Map<String , Integer> hideLayerParams , Activation activation , double dropOut) {
-		FeedForwardLayer hideLayerA = new LSTM.Builder()
+		FeedForwardLayer hideLayerA = new GravesLSTM.Builder()
 				.nIn(hideLayerParams.get(INPUT_SIZE))
-				.nOut(hideLayerParams.get(IDEALOUTPUT_SIZE) * hideLayerParams.get(HIDELAYERA_RIGHT))
-				.activation(activation)
+				.nOut(hideLayerParams.get(HIDELAYERA_RIGHT))
+//				.activation(activation)
+//				.dropOut(dropOut)
 				.build();
-		FeedForwardLayer hideLayerB = new LSTM.Builder()
-				.nIn(hideLayerParams.get(IDEALOUTPUT_SIZE) * hideLayerParams.get(HIDELAYERA_RIGHT))
-				.nOut(hideLayerParams.get(IDEALOUTPUT_SIZE) * hideLayerParams.get(HIDELAYERB_RIGHT))
-				.activation(activation)
-				.build();
-		FeedForwardLayer hideLayerC = new DenseLayer.Builder()
-				.nIn(hideLayerParams.get(IDEALOUTPUT_SIZE) * hideLayerParams.get(HIDELAYERB_RIGHT))
-				.nOut(hideLayerParams.get(IDEALOUTPUT_SIZE) * hideLayerParams.get(HIDELAYERC_RIGHT))
-				.activation(activation)
-				.build();
+//		FeedForwardLayer hideLayerB = new GravesLSTM.Builder()
+//				.nOut(hideLayerParams.get(HIDELAYERB_RIGHT))
+//				.activation(activation)
+//				.build();
+//		FeedForwardLayer hideLayerC = new DenseLayer.Builder()
+//				.nOut(hideLayerParams.get(HIDELAYERC_RIGHT))
+//				.activation(activation)
+//				.build();
+		
 		/*
 		 * 输出层
 		 */
 		FeedForwardLayer outputLayer = new RnnOutputLayer.Builder(LossFunctions.LossFunction.MSE)
-				.nIn(hideLayerParams.get(IDEALOUTPUT_SIZE) * hideLayerParams.get(HIDELAYERC_RIGHT))
 				.nOut(hideLayerParams.get(IDEALOUTPUT_SIZE))
-				.activation(activation)
-				.dropOut(dropOut)
+				.activation(Activation.IDENTITY)
 				.build();
-		return NNFactory.buildRNN(1000000 , WeightInit.XAVIER , new Adam(0.1 , 0.9 , 0.9999 , 0.0000000001) , hideLayerA , hideLayerB , hideLayerC , outputLayer);
+//		return NNFactory.buildRNN(1234567 , WeightInit.XAVIER , new Adam(0.01 , 0.9 , 0.9999 , 0.0000000001) , hideLayerA , hideLayerB , hideLayerC , outputLayer);
+//		return NNFactory.buildRNN(1234567 , WeightInit.XAVIER , new Adam(0.01) , hideLayerA , hideLayerB , hideLayerC , outputLayer);
+//		return NNFactory.buildRNN(1234567 , WeightInit.XAVIER , new Adam(0.01) , hideLayerA , hideLayerB , outputLayer);
+		return NNFactory.buildRNN(1234567 , WeightInit.XAVIER , new Adam(0.01) , hideLayerA , outputLayer);
+//		return NNFactory.buildRNN(1234 , WeightInit.XAVIER , new Adam(0.01) , hideLayerA , hideLayerC , outputLayer);
 	}
 }

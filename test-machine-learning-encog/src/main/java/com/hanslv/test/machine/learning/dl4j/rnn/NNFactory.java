@@ -1,12 +1,17 @@
 package com.hanslv.test.machine.learning.dl4j.rnn;
 
-import org.deeplearning4j.nn.conf.GradientNormalization;
+import org.deeplearning4j.api.storage.StatsStorage;
+import org.deeplearning4j.nn.api.OptimizationAlgorithm;
+import org.deeplearning4j.nn.conf.BackpropType;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration.ListBuilder;
 import org.deeplearning4j.nn.conf.layers.FeedForwardLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
+import org.deeplearning4j.ui.api.UIServer;
+import org.deeplearning4j.ui.stats.StatsListener;
+import org.deeplearning4j.ui.storage.InMemoryStatsStorage;
 import org.nd4j.linalg.learning.config.IUpdater;
 
 /**
@@ -15,8 +20,8 @@ import org.nd4j.linalg.learning.config.IUpdater;
  *
  */
 public class NNFactory {
+	private static UIServer uiServer;
 	
-
 	/**
 	 * 搭建神经网络
 	 * @param weightSeed 随机权重种子
@@ -31,12 +36,20 @@ public class NNFactory {
 		 */
         ListBuilder configBuilder = new NeuralNetConfiguration.Builder()
         		/*
-        		 * 随机权重种子
+        		 * 随机权重种子，保证每次运算的结果相同
         		 */
                 .seed(weightSeed)
                 /*
+                 * 设置梯度下降方式
+                 */
+                .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+                /*
+                 * 偏置向量初始化
+                 */
+                .biasInit(0)
+                /*
                  * 神经网络初始化方式(当前选择XAVIER：使每层输出的方差尽量相等)
-                 * XAVIER能够很好的使用TANH激活函数，但是当使用ReLU时建议将初始化方式替换为WeightInit.RELU
+                 * XAVIER能够很好的适用于TANH激活函数，但是当使用ReLU时建议将初始化方式替换为WeightInit.RELU
                  */
 //                .weightInit(WeightInit.XAVIER)
                 .weightInit(weightInit)
@@ -53,11 +66,11 @@ public class NNFactory {
                 /*
                  * 设置梯度规范化器，防止梯度消失
                  */
-                .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
+//                .gradientNormalization(GradientNormalization.ClipElementWiseAbsoluteValue)
                 /*
                  * 设置梯队规范化器阈值
                  */
-                .gradientNormalizationThreshold(0.5)
+//                .gradientNormalizationThreshold(0.5)
                 /*
                  * 根据上方的配置构建ListBuilder
                  */
@@ -71,23 +84,63 @@ public class NNFactory {
         /*
          * 初始化神经网络结构        
          */
-        MultiLayerConfiguration layerConfig = configBuilder.build();
+        MultiLayerConfiguration layerConfig = configBuilder
+        		/*
+        		 * 是否预训练
+        		 */
+        		.pretrain(false)
+        		/*
+        		 * 是否反向传播
+        		 */
+        		.backprop(true)
+        		/*
+        		 * 设置反向传播类型
+        		 */
+        		.backpropType(BackpropType.TruncatedBPTT).tBPTTForwardLength(50).tBPTTBackwardLength(50)
+        		/*
+        		 * 执行构建
+        		 */
+        		.build();
         
         /*
          * 实例化神经网络
          */
         MultiLayerNetwork network = new MultiLayerNetwork(layerConfig);
+//        network.setListeners(new ScoreIterationListener(500));
         
         /*
          * 初始化神经网络
          */
         network.init();
         
-        /*
-         * 设置监听器
-         */
-//        network.setListeners(new ScoreIterationListener(1));
-        
         return network;
 	}
+	
+	
+	/**
+	 * 初始化图形界面
+	 * @param net
+	 * @return
+	 */
+	public static void initUI(MultiLayerNetwork net) {
+		if(uiServer == null) uiServer = UIServer.getInstance();
+		
+        //设置网络信息（随时间变化的梯度、分值等）的存储位置。这里将其存储于内存。
+        StatsStorage statsStorage = new InMemoryStatsStorage();         //或者： new FileStatsStorage(File)，用于后续的保存和载入
+        
+        //将StatsStorage实例连接至用户界面，让StatsStorage的内容能够被可视化
+        uiServer.attach(statsStorage);
+
+        //然后添加StatsListener来在网络定型时收集这些信息
+        net.setListeners(new StatsListener(statsStorage));
+	}
+	
+	
+	/**
+	 * 停止UI界面
+	 */
+	public static void stopUI() {
+		if(uiServer != null) uiServer.stop();
+	}
+	
 }
