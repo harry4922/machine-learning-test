@@ -96,7 +96,8 @@ public class NNFactory {
         		/*
         		 * 设置反向传播类型
         		 */
-        		.backpropType(BackpropType.TruncatedBPTT).tBPTTForwardLength(50).tBPTTBackwardLength(50)
+        		.backpropType(BackpropType.TruncatedBPTT)
+        		.tBPTTForwardLength(50).tBPTTBackwardLength(50)
         		/*
         		 * 执行构建
         		 */
@@ -106,7 +107,7 @@ public class NNFactory {
          * 实例化神经网络
          */
         MultiLayerNetwork network = new MultiLayerNetwork(layerConfig);
-//        network.setListeners(new ScoreIterationListener(500));
+//        network.setListeners(new ScoreIterationListener(1));
         
         /*
          * 初始化神经网络

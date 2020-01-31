@@ -10,64 +10,52 @@ import java.util.Arrays;
 public class Result {
 	private String stockId;//股票ID
 	private String date;//执行预测的日期
-	private double accuracy;
-	private double precision;
-	private double recall;
-	private double f1;
+	private double mse;//当前均方误差值
 	private double[] resultDataArray;//结果数组
 	private double[] realResultDataArray;
 	
-	
+	@Override
+	public String toString() {
+		return "forcastResult：" + Arrays.toString(resultDataArray) + "，realResult" + Arrays.toString(realResultDataArray) + ",MSE：" + mse;
+	}
+
 	public String getStockId() {
 		return stockId;
 	}
+
 	public void setStockId(String stockId) {
 		this.stockId = stockId;
 	}
+
 	public String getDate() {
 		return date;
 	}
+
 	public void setDate(String date) {
 		this.date = date;
 	}
-	public double getAccuracy() {
-		return accuracy;
+
+	public double getMse() {
+		return mse;
 	}
-	public void setAccuracy(double accuracy) {
-		this.accuracy = accuracy;
+
+	public void setMse(double mse) {
+		this.mse = mse;
 	}
-	public double getPrecision() {
-		return precision;
-	}
-	public void setPrecision(double precision) {
-		this.precision = precision;
-	}
-	public double getRecall() {
-		return recall;
-	}
-	public void setRecall(double recall) {
-		this.recall = recall;
-	}
-	public double getF1() {
-		return f1;
-	}
-	public void setF1(double f1) {
-		this.f1 = f1;
-	}
+
 	public double[] getResultDataArray() {
 		return resultDataArray;
 	}
+
 	public void setResultDataArray(double[] resultDataArray) {
 		this.resultDataArray = resultDataArray;
 	}
+
 	public double[] getRealResultDataArray() {
 		return realResultDataArray;
 	}
+
 	public void setRealResultDataArray(double[] realResultDataArray) {
 		this.realResultDataArray = realResultDataArray;
-	}
-	@Override
-	public String toString() {
-		return "forcastResult：" + Arrays.toString(resultDataArray) + "，realResult" + Arrays.toString(realResultDataArray) + ",accuracy：" + accuracy + "，precision：" + precision + "，recall：" + recall + "，f1：" + f1;
 	}
 }

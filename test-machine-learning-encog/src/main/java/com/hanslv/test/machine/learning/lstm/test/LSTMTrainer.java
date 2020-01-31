@@ -13,7 +13,7 @@ import org.datavec.api.records.reader.SequenceRecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVSequenceRecordReader;
 import org.datavec.api.split.NumberedFileInputSplit;
 import org.deeplearning4j.datasets.datavec.SequenceRecordReaderDataSetIterator;
-import org.deeplearning4j.eval.Evaluation;
+import org.deeplearning4j.eval.RegressionEvaluation;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
@@ -31,8 +31,8 @@ import com.hanslv.test.machine.learning.encog.util.DbUtil;
  */
 public class LSTMTrainer {
 	static final String START_DATE = "2020-01-03";//开始时间
-	static final int TEST_COUNT = 10;//训练次数
-	static final int STOCK_ID_COUNT = 3550;//参与测试的股票
+	static final int TEST_COUNT = 1;//训练次数
+	static final int STOCK_ID_COUNT = 1;//参与测试的股票
 	static final int AVERAGE_TYPE = 89;//均线类型
 	
 	static final int INPUT_SIZE = 5;//输入神经元数量
@@ -43,18 +43,15 @@ public class LSTMTrainer {
 	static final String DATA_FILE_PATH_SUFFIX = ".csv";//数据文件存储地址后缀
 	
 	static final int EPOCH = 100;//训练纪元
-	static final int TRAIN_STEP_LONG = 251;//训练数据批次
+	static final int TRAIN_STEP_LONG = 300;//训练数据批次
 	static final int TEST_STEP_LONG = 6;//测试数据批次
 	static final int BATCH_SIZE = 1;//单步长中包含的数据量
 	static final int SIGLE_TIME_LENGTH = 5;//单个数据的时间跨度，包含几天成交信息的汇总
-	static final double DIFF_LIMIT = 0.01;//误差允许范围
-	
-//	static Map<String , List<Result>> resultMap = new HashMap<>();//结果集
 	
 	public static void main(String[] args) {
 		try {
 			for(int i = 0 ; i < TEST_COUNT ; i++) {
-				for(int j = 1 ; j < STOCK_ID_COUNT ; j++) {
+				for(int j = 1 ; j <= STOCK_ID_COUNT ; j++) {
 					String stockId = j + "";
 					String currentStartDate = DbUtil.changeDate(stockId , START_DATE , i * SIGLE_TIME_LENGTH , true);
 					
@@ -63,7 +60,6 @@ public class LSTMTrainer {
 					 */
 					BigDecimal averageScope = new BigDecimal(DbUtil.getAverage(stockId , currentStartDate , AVERAGE_TYPE)[1]);
 					if(averageScope.compareTo(BigDecimal.ZERO) <= 0) continue;
-					
 					doTrain(stockId , currentStartDate);
 				}
 			}
@@ -94,32 +90,27 @@ public class LSTMTrainer {
 	 * 执行训练
 	 * @return
 	 */
-	private static Result doTrain(String stockId , String date) {
-		/*
-		 * 获取训练数据
-		 */
+	private static void doTrain(String stockId , String date) {
+		String[] stockInfoArray = DbUtil.findStockInfo(stockId).split(",");
+		String stockCode = stockInfoArray[1];
 		try {
-			Result testResult =train(getTrainData(stockId , date));
-			
-			if(testResult != null) {
-				String[] stockInfoArray = DbUtil.findStockInfo(stockId).split(",");
-				String stockCode = stockInfoArray[1];
-				double forcastMax = testResult.getResultDataArray()[0];
-				double forcastMin = testResult.getResultDataArray()[1];
-				double realMax = testResult.getRealResultDataArray()[0];
-				double realMin = testResult.getRealResultDataArray()[1];
+			Result result = train(getTrainData(stockId , date));
+			if(result != null) {
+				double forcastMax = result.getResultDataArray()[0];
+				double forcastMin = result.getResultDataArray()[1];
+				double realMax = result.getRealResultDataArray()[0];
+				double realMin = result.getRealResultDataArray()[1];
 				
-				if(forcastMax * (1 - DIFF_LIMIT) <= realMax && forcastMin * (1 + DIFF_LIMIT) >= realMin)
-					System.out.println("stockCode：" + stockCode + "，date：" + date + "，Result：" + testResult);
-				else
-					System.err.println("stockCode：" + stockCode + "，date：" + date + "，Result：" + testResult);
+				System.err.println("stockCode = " + stockCode + "，date = " + date + "，maxDiff = " + (forcastMax - realMax) + "，minDiff = " + (forcastMin - realMin) + "，result = " + result);
+				
+//				if(forcastMax * (1 - DIFF_LIMIT) <= realMax && forcastMin * (1 + DIFF_LIMIT) >= realMin)
+//					System.out.println("stockCode：" + stockCode + "，date：" + date + "，Result：" + result);
+//				else
+//					System.err.println("stockCode：" + stockCode + "，date：" + date + "，Result：" + result);
 			}
-			return train(getTrainData(stockId , date));
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
-			return null;
 		}		
-		
 	}
 	
 	
@@ -128,21 +119,21 @@ public class LSTMTrainer {
 	 * @param trainDataList 训练数据集合
 	 * @param testDataList 测试数据集合
 	 * @return
+	 * @throws IOException 
 	 */
-	private static Result train(DataSetIterator[] dataSetIterators) {
+	private static Result train(DataSetIterator[] dataSetIterators) throws IOException {
 		if(dataSetIterators == null) return null;
 		
 		/*
 		 * 数据归一化处理
 		 */
-		DataNormalization normalize = normalize(dataSetIterators);
+		DataNormalization normalizer = normalize(dataSetIterators);
 		
 		/*
 		 * 获取LSTM神经网络
 		 */
 		MultiLayerNetwork lstmNetwork = LSTMBuilder.build(INPUT_SIZE , IDEAL_OUTPUT_SIZE);
-//		NNFactory.initUI(lstmNetwork);
-//		System.out.println(lstmNetwork.summary());
+		System.out.println(lstmNetwork.summary());
 		
 		DataSetIterator trainDataSetIterator = dataSetIterators[0];
 		DataSetIterator testDataSetIterator = dataSetIterators[1];
@@ -150,76 +141,80 @@ public class LSTMTrainer {
 		/*
 		 * 执行预测
 		 */
-		Evaluation eval = new Evaluation(IDEAL_OUTPUT_SIZE);
 		Result result = new Result();
 		for(int i = 0 ; i < EPOCH ; i++) {
 			while(trainDataSetIterator.hasNext()) {
 				DataSet trainDataSet = trainDataSetIterator.next();
 				lstmNetwork.fit(trainDataSet);
 			}
+//			lstmNetwork.fit(trainDataSetIterator);
+			trainDataSetIterator.reset();
 			
 			/*
 			 * 测试
 			 */
-			double[] realResult = null;
-			double[] forcastResult = null;
+			RegressionEvaluation eval = new RegressionEvaluation(IDEAL_OUTPUT_SIZE);
 			while(testDataSetIterator.hasNext()) {
-				DataSet testDataSet = testDataSetIterator.next();
-				INDArray testInput = testDataSet.getFeatures();
-				INDArray testOutput = testDataSet.getLabels();
-				INDArray checkOutput = lstmNetwork.output(testInput , false);
-				DataSet checkDataSet = new DataSet(testInput , checkOutput);
-				eval.evalTimeSeries(testOutput , checkOutput);
-				
-				
-				normalize.revert(testDataSet);
-				normalize.revert(checkDataSet);
-				INDArray revertedRealResult = testDataSet.getLabels();
-				INDArray revertedForcastResult = checkDataSet.getLabels();
-				double[] realResultArray = revertedRealResult.data().asDouble();
-				double[] forcastResultArray = revertedForcastResult.data().asDouble();
-				realResult = realResultArray;
-				forcastResult = forcastResultArray;
-//				System.out.println("预测：max：" + forcastResultArray[0] + ",min：" + forcastResultArray[1]);
-//				System.out.println("实际：max：" + realResultArray[0] + ",min：" + realResultArray[1]);
-//				System.out.println("----------------------------------------------------------");
+	            DataSet testData = testDataSetIterator.next();
+	            INDArray features = testData.getFeatures();
+	            INDArray lables = testData.getLabels();
+	            INDArray predicted = lstmNetwork.output(features, true);
+	
+	            eval.evalTimeSeries(lables, predicted);
 			}
-//			System.out.println(eval.stats());
-			trainDataSetIterator.reset();
-			testDataSetIterator.reset();
-			double currentAccuracy = result.getAccuracy();
-			double accuracy = eval.accuracy();
-			boolean accuracyCheck = accuracy >= currentAccuracy;
-			
-			double currentPrecision = result.getPrecision();
-			double precision = eval.precision();
-			boolean precisionCheck = precision >= currentPrecision;
-			
-			double currentRecall = result.getRecall();
-			double recall = eval.recall();
-			boolean recallCheck = recall >= currentRecall;
-			
-			double currentF1 = result.getF1();
-			double f1 = eval.f1();
-			boolean f1Check = f1 >= currentF1;
-			
-			if(f1Check && recallCheck && precisionCheck && accuracyCheck) {
-				result.setAccuracy(accuracy);
-				result.setPrecision(precision);
-				result.setRecall(recall);
-				result.setF1(f1);
-				result.setRealResultDataArray(realResult);
-				result.setResultDataArray(forcastResult);
-				
-				currentAccuracy = accuracy;
-				currentPrecision = precision;
-				currentRecall = recall;
-				currentF1 = f1;
-			}
+            testDataSetIterator.reset();
+            
+            List<double[]> resultList = doPredicted(trainDataSetIterator, testDataSetIterator, lstmNetwork, normalizer);
+            double currentMse = eval.averageMeanSquaredError();
+            double lastMse = result.getMse();
+            
+//			double forcastMax = resultList.get(1)[0];
+//			double forcastMin = resultList.get(1)[1];
+//			double realMax = resultList.get(0)[0];
+//			double realMin = resultList.get(0)[1];
+//			System.err.println("maxDiff = " + (forcastMax - realMax) + "，minDiff = " + (forcastMin - realMin) + "，MSE = " + eval.stats());
+            
+            if(currentMse < lastMse || lastMse == 0) {
+            	result.setMse(currentMse);
+            	result.setRealResultDataArray(resultList.get(0));
+            	result.setResultDataArray(resultList.get(1));
+            }
 		}
 		return result;
 	}
 	
+	
+	/**
+	 * 执行预测并获取预测结果
+	 * @param trainDataSetIterator
+	 * @param testDataSetIterator
+	 * @param lstmNetwork
+	 * @param normalizer
+	 * @return
+	 */
+    private static List<double[]> doPredicted(DataSetIterator trainDataSetIterator , DataSetIterator testDataSetIterator , MultiLayerNetwork lstmNetwork , DataNormalization normalizer){
+    	List<double[]> resultList = new ArrayList<>();
+		while(trainDataSetIterator.hasNext()) {
+			DataSet trainData = trainDataSetIterator.next();
+			lstmNetwork.rnnTimeStep(trainData.getFeatures());
+		}
+		INDArray predictedResult = null;
+		DataSet testData = null;
+		while(testDataSetIterator.hasNext()) {
+			testData = testDataSetIterator.next();
+			predictedResult = lstmNetwork.rnnTimeStep(testData.getFeatures());
+		}
+		normalizer.revert(testData);
+		normalizer.revertLabels(predictedResult);
+		double[] realResultDouble = testData.getLabels().data().asDouble();
+		double[] predictedResultDouble = predictedResult.data().asDouble();
+		resultList.add(realResultDouble);
+		resultList.add(predictedResultDouble);
+		trainDataSetIterator.reset();
+		testDataSetIterator.reset();
+//		lstmNetwork.clear();
+		return resultList;
+    }
 	
 	
 	/**
@@ -229,7 +224,8 @@ public class LSTMTrainer {
 	 * @throws IOException 
 	 */
 	private static DataSetIterator[] getTrainData(String stockId , String date) throws IOException, InterruptedException{
-		boolean resultA = createDatas(stockId , date , TRAIN_STEP_LONG , DATA_FILE_PATH_PREFIX);//创建训练数据集文件
+		String trainDataEndDate = DbUtil.changeDate(stockId , date , TEST_STEP_LONG * SIGLE_TIME_LENGTH , true);//去除测试数据日期
+		boolean resultA = createDatas(stockId , trainDataEndDate , TRAIN_STEP_LONG , DATA_FILE_PATH_PREFIX);//创建训练数据集文件
 		boolean resultB = createDatas(stockId , date , TEST_STEP_LONG , TEST_DATA_FILE_PATH_PREFIX);//创建测试数据集文件
 		
 		if(!resultA || !resultB) return null;
@@ -306,6 +302,7 @@ public class LSTMTrainer {
 		BigDecimal min = null;//最小值
 		BigDecimal startPrice = null;//开盘价
 		BigDecimal endPrice = null;//收盘价
+//		BigDecimal lastEndPrice = null;//上一时间批次收盘价
 		BigDecimal turnoverRate = BigDecimal.ZERO;//换手率
 		int counterA = 0;
 		List<String> bufferList = new ArrayList<>();
@@ -324,13 +321,18 @@ public class LSTMTrainer {
 			if(counterA == singleTimeLength) endPrice = currentEndPrice;
 			turnoverRate = turnoverRate.add(currentTurnoverRate);
 			if(counterA == singleTimeLength) {
-				String sourceData = 
-						max + "," + 
-						min + "," + 
-						startPrice + "," + 
-						endPrice + "," + 
-						turnoverRate;
-				bufferList.add(sourceData);
+//				if(lastEndPrice == null) lastEndPrice = endPrice;
+//				else {
+					String sourceData = 
+//							max.subtract(lastEndPrice).divide(lastEndPrice , 4 , BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100)) + "," + 
+//							lastEndPrice.subtract(min).divide(lastEndPrice , 4 , BigDecimal.ROUND_HALF_UP).multiply(new BigDecimal(100)) + "," + 
+							max + "," +
+							min + "," + 
+							startPrice + "," + 
+							endPrice + "," + 
+							turnoverRate;
+					bufferList.add(sourceData);
+//				}
 				max = null;
 				min = null;
 				startPrice = null;

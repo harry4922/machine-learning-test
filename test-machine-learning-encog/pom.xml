@@ -40,5 +40,6 @@
 	    <artifactId>deeplearning4j-ui_2.11</artifactId>
 	    <version>1.0.0-alpha</version>
 	</dependency>
+	
   </dependencies>
 </project>
