@@ -13,6 +13,7 @@ import org.datavec.api.records.reader.SequenceRecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVSequenceRecordReader;
 import org.datavec.api.split.NumberedFileInputSplit;
 import org.deeplearning4j.datasets.datavec.SequenceRecordReaderDataSetIterator;
+import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.eval.RegressionEvaluation;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -154,6 +155,7 @@ public class LSTMTrainer {
 			 * 测试
 			 */
 			RegressionEvaluation eval = new RegressionEvaluation(IDEAL_OUTPUT_SIZE);
+			Evaluation eval2 = new Evaluation(IDEAL_OUTPUT_SIZE);
 			while(testDataSetIterator.hasNext()) {
 	            DataSet testData = testDataSetIterator.next();
 	            INDArray features = testData.getFeatures();
@@ -161,24 +163,53 @@ public class LSTMTrainer {
 	            INDArray predicted = lstmNetwork.output(features, true);
 	
 	            eval.evalTimeSeries(lables, predicted);
+	            eval2.evalTimeSeries(lables , predicted);
 			}
-            testDataSetIterator.reset();
+			testDataSetIterator.reset();
             
             List<double[]> resultList = doPredicted(trainDataSetIterator, testDataSetIterator, lstmNetwork, normalizer);
-            double currentMse = eval.averageMeanSquaredError();
-            double lastMse = result.getMse();
             
+            double currentMse = eval.averageMeanSquaredError();
+            boolean mseCheckB = currentMse < 1;
+            double currentAccuracy = eval2.accuracy();
+            double lastAccuracy = result.getAccuracy();
+            boolean accuracyCheck = currentAccuracy != 0 && currentAccuracy > lastAccuracy;
+            double currentPrecision = eval2.precision();
+            double lastPrecision = result.getPrecision();
+            boolean precisionCheck = currentAccuracy != 0 && currentPrecision > lastPrecision;
+            double currentRecall = eval2.recall();
+            double lastRecall = result.getRecall();
+            boolean recallCheck = currentRecall != 0 && currentRecall > lastRecall;
+            double currentF1 = eval2.f1();
+            double lastF1 = result.getF1();
+            boolean f1Check = currentF1 != 0 && currentF1 > lastF1;
+            
+//            double lastMse = result.getMse();
+//            boolean mseCheck = currentMse < lastMse || lastMse == 0;
+//            
 //			double forcastMax = resultList.get(1)[0];
 //			double forcastMin = resultList.get(1)[1];
 //			double realMax = resultList.get(0)[0];
 //			double realMin = resultList.get(0)[1];
-//			System.err.println("maxDiff = " + (forcastMax - realMax) + "，minDiff = " + (forcastMin - realMin) + "，MSE = " + eval.stats());
+//			System.err.println("maxDiff = " + (forcastMax - realMax) + "，minDiff = " + (forcastMin - realMin) + "，MSE = " + currentMse);
+//			System.out.println(eval.stats());
+//			System.out.println(eval2.stats());
             
-            if(currentMse < lastMse || lastMse == 0) {
-            	result.setMse(currentMse);
-            	result.setRealResultDataArray(resultList.get(0));
-            	result.setResultDataArray(resultList.get(1));
-            }
+//            if(mseCheck) {
+//            	result.setMse(currentMse);
+//            	result.setRealResultDataArray(resultList.get(0));
+//            	result.setResultDataArray(resultList.get(1));
+//            }
+			
+			if(mseCheckB && accuracyCheck && precisionCheck && recallCheck && f1Check) {
+				result.setAccuracy(currentAccuracy);
+				result.setPrecision(currentPrecision);
+				result.setRecall(currentRecall);
+				result.setF1(currentF1);
+				result.setRealResultDataArray(resultList.get(0));
+				result.setResultDataArray(resultList.get(1));
+			}
+			
 		}
 		return result;
 	}
@@ -212,7 +243,7 @@ public class LSTMTrainer {
 		resultList.add(predictedResultDouble);
 		trainDataSetIterator.reset();
 		testDataSetIterator.reset();
-//		lstmNetwork.clear();
+		lstmNetwork.clear();
 		return resultList;
     }
 	
