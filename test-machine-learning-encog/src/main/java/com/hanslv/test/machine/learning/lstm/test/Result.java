@@ -1,7 +1,5 @@
 package com.hanslv.test.machine.learning.lstm.test;
 
-import java.util.Arrays;
-
 /**
  * 预测结果
  * @author hanslv
@@ -10,17 +8,15 @@ import java.util.Arrays;
 public class Result {
 	private String stockId;//股票ID
 	private String date;//执行预测的日期
-	private double mse;//当前均方误差值
-	private double accuracy;
-	private double precision;
-	private double recall;
 	private double f1;
-	private double[] resultDataArray;//结果数组
-	private double[] realResultDataArray;
+	private double predictedMax;//预测的Max
+	private double predictedMin;//预测Min
+	private double realMax;//真实Max
+	private double realMin;//真实Min
 	
 	@Override
 	public String toString() {
-		return "forcastResult：" + Arrays.toString(resultDataArray) + "，realResult" + Arrays.toString(realResultDataArray) + "，MSE：" + mse + "，accuracy：" + accuracy + "，precision：" + precision + "，recall：" + recall + "，f1：" + f1 ;
+		return "predictedMax = " + predictedMax + "，predictedMin = " + predictedMin + "，realMax = " + realMax + "，realMin = " + realMin + "，f1：" + f1;
 	}
 
 	public String getStockId() {
@@ -39,52 +35,36 @@ public class Result {
 		this.date = date;
 	}
 
-	public double getMse() {
-		return mse;
+	public double getPredictedMax() {
+		return predictedMax;
 	}
 
-	public void setMse(double mse) {
-		this.mse = mse;
+	public void setPredictedMax(double predictedMax) {
+		this.predictedMax = predictedMax;
 	}
 
-	public double[] getResultDataArray() {
-		return resultDataArray;
+	public double getPredictedMin() {
+		return predictedMin;
 	}
 
-	public void setResultDataArray(double[] resultDataArray) {
-		this.resultDataArray = resultDataArray;
+	public void setPredictedMin(double predictedMin) {
+		this.predictedMin = predictedMin;
 	}
 
-	public double[] getRealResultDataArray() {
-		return realResultDataArray;
+	public double getRealMax() {
+		return realMax;
 	}
 
-	public void setRealResultDataArray(double[] realResultDataArray) {
-		this.realResultDataArray = realResultDataArray;
+	public void setRealMax(double realMax) {
+		this.realMax = realMax;
 	}
 
-	public double getAccuracy() {
-		return accuracy;
+	public double getRealMin() {
+		return realMin;
 	}
 
-	public void setAccuracy(double accuracy) {
-		this.accuracy = accuracy;
-	}
-
-	public double getPrecision() {
-		return precision;
-	}
-
-	public void setPrecision(double precision) {
-		this.precision = precision;
-	}
-
-	public double getRecall() {
-		return recall;
-	}
-
-	public void setRecall(double recall) {
-		this.recall = recall;
+	public void setRealMin(double realMin) {
+		this.realMin = realMin;
 	}
 
 	public double getF1() {

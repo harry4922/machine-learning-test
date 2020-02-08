@@ -2,7 +2,6 @@ package com.hanslv.test.machine.learning.dl4j.rnn;
 
 import org.deeplearning4j.api.storage.StatsStorage;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
-import org.deeplearning4j.nn.conf.BackpropType;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration.ListBuilder;
@@ -80,7 +79,7 @@ public class NNFactory {
          */
         
         for(FeedForwardLayer layer : layers) configBuilder.layer(layer);
-
+        
         /*
          * 初始化神经网络结构        
          */
@@ -96,8 +95,8 @@ public class NNFactory {
         		/*
         		 * 设置反向传播类型
         		 */
-        		.backpropType(BackpropType.TruncatedBPTT)
-        		.tBPTTForwardLength(50).tBPTTBackwardLength(50)
+//        		.backpropType(BackpropType.TruncatedBPTT)
+//        		.tBPTTForwardLength(50).tBPTTBackwardLength(50)
         		/*
         		 * 执行构建
         		 */
