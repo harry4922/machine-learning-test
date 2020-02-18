@@ -20,17 +20,17 @@ public class LSTMBuilder {
 	public static MultiLayerNetwork build(int inputSize , int idealOutputSize) {
 		FeedForwardLayer hideLayerA = new GravesLSTM.Builder()
 				.nIn(inputSize)
-				.nOut(100)//100
-				.activation(Activation.SOFTSIGN)
+				.nOut(30)//25
+				.activation(Activation.TANH)
 				.build();
 		FeedForwardLayer hideLayerB = new GravesLSTM.Builder()
-				.nOut(100)//100
-				.activation(Activation.SOFTSIGN)
+				.nOut(30)//25
+				.activation(Activation.TANH)
 				.build();
-		FeedForwardLayer hideLayerC = new GravesLSTM.Builder()
-				.nOut(100)//100
-				.activation(Activation.SOFTSIGN)
-				.build();
+//		FeedForwardLayer hideLayerC = new GravesLSTM.Builder()
+//				.nOut(30)//100
+//				.activation(Activation.SOFTSIGN)
+//				.build();
 //		FeedForwardLayer hideLayerC = new DenseLayer.Builder()
 //				.nOut(15)
 //				.activation(Activation.SOFTSIGN)
@@ -39,8 +39,8 @@ public class LSTMBuilder {
 				.nOut(idealOutputSize)
 				.activation(Activation.IDENTITY)
 				.build();
-//		return NNFactory.buildRNN(12345 , WeightInit.XAVIER , new RmsProp(0.01) , hideLayerA , hideLayerB , outputLayer);
-		return NNFactory.buildRNN(12345 , WeightInit.XAVIER , new Adam(0.01) , hideLayerA , hideLayerB , hideLayerC , outputLayer);
+		return NNFactory.buildRNN(12345 , WeightInit.XAVIER , new Adam(0.01) , hideLayerA , hideLayerB , outputLayer);
+//		return NNFactory.buildRNN(12345 , WeightInit.XAVIER , new Adam(0.01) , hideLayerA , hideLayerB , hideLayerC , outputLayer);
 //		return NNFactory.buildRNN(12345 , WeightInit.XAVIER , new RmsProp(0.01) , hideLayerA , hideLayerB , hideLayerC , outputLayer);
 	}
 }

@@ -1021,6 +1021,60 @@ public class DbUtil {
 	}
 	
 	
+	/**
+	 * 获取当前股票的分类
+	 * @param stockId
+	 * @return
+	 */
+	public static String getStockSort(String stockId) {
+		StringBuffer stockSortId = new StringBuffer();
+		Connection conn = JdbcUtil.getJdbcConnection();
+		String sql = "SELECT sort_id , stock_id FROM tab_stock_label WHERE stock_id = ?";
+		try(PreparedStatement pstmt = conn.prepareStatement(sql)){
+			pstmt.setString(1 , stockId);
+			try(ResultSet resultSet = pstmt.executeQuery()){
+				while(resultSet.next()) {
+					stockSortId.append(resultSet.getString(1) + ",");
+				}
+			}
+		}catch(SQLException e) {e.printStackTrace();}finally {JdbcUtil.closeJdbcConnection();}
+		if(stockSortId.length() == 0) return "";
+		stockSortId.deleteCharAt(stockSortId.length() - 1);
+		return stockSortId.toString();
+	}
+	
+	/**
+	 * 获取指定分类ID的全部股票
+	 * @param sortId
+	 * @return
+	 */
+	public static String getStockIdBySortId(String sortId) {
+		StringBuffer sort = new StringBuffer();
+		Connection conn = JdbcUtil.getJdbcConnection();
+		String sql = "SELECT stock_id FROM tab_stock_label WHERE sort_id = ?";
+		try(PreparedStatement pstmt = conn.prepareStatement(sql)){
+			pstmt.setString(1 , sortId);
+			try(ResultSet resultSet = pstmt.executeQuery()){
+				while(resultSet.next()) {
+					sort.append(resultSet.getString(1) + ",");
+				}
+			}
+		}catch(SQLException e) {e.printStackTrace();}finally {JdbcUtil.closeJdbcConnection();}
+		sort.deleteCharAt(sort.length() - 1);
+		return sort.toString();
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	//String stockId , int stepLong , String endDate , int rectangleLong , int singleBatchSize , boolean testOrNot

@@ -35,7 +35,7 @@ import com.hanslv.test.machine.learning.encog.util.DbUtil;
  *
  */
 public class LSTMTrainer {
-	static final String START_DATE = "2019-12-06";//开始时间2020-01-03
+	static final String START_DATE = "2020-02-10";//开始时间2020-01-03
 	static final int TEST_COUNT = 1;//训练次数
 	static final int STOCK_ID_COUNT = 3550;//参与测试的股票
 	static final int STOCK_ID_START = 1;//起始股票ID
@@ -51,31 +51,48 @@ public class LSTMTrainer {
 	static final String TEST_DATA_FEATURES_FILE_PREFIX = "E:\\Java\\eclipse\\machine-learning-test\\dataFiles\\testData-features";//测试数据输入文件前缀
 	static final String DATA_FILE_PATH_SUFFIX = ".csv";//数据文件存储地址后缀
 	
-	static final int EPOCH = 10000;//训练纪元
-	static final int TRAIN_DATA_SIZE = 20;//训练数据批次
-	static final int TEST_DATA_SIZE = 11;//测试数据批次
+	static final int EPOCH = 20;//训练纪元10000
+	static final int TRAIN_DATA_SIZE = 100;//训练数据批次
+	static final int TEST_DATA_SIZE = 101;//测试数据批次
 	static final int BATCH_SIZE = 1;//单步长中包含的数据量
-	static final int SIGLE_TIME_LENGTH = 20;//单个数据的时间跨度，包含几天成交信息的汇总
+	static final int SIGLE_TIME_LENGTH = 5;//单个数据的时间跨度，包含几天成交信息的汇总
+	static final String SORT_ID = "2258";//分类ID
 	
 	public static void main(String[] args) throws InterruptedException {
+		/*
+		 * 改为获取波段分类的股票
+		 */
+		String[] stockIdArray = DbUtil.getStockIdBySortId(SORT_ID).split(",");
 		try {
-			for(int i = 0 ; i < TEST_COUNT ; i++) {
-				for(int j = STOCK_ID_START ; j <= STOCK_ID_COUNT ; j++) {
-					String stockId = j + "";
-					String currentStartDate = DbUtil.changeDate(stockId , START_DATE , i * SIGLE_TIME_LENGTH , true);
-					
-					/*
-					 * 判断当前均线是否上涨
-					 */
-					BigDecimal averageScope = new BigDecimal(DbUtil.getAverage(stockId , currentStartDate , AVERAGE_TYPE)[1]);
-					if(averageScope.compareTo(BigDecimal.ZERO) <= 0) continue;
-					doTrain(stockId , currentStartDate);
-					TimeUnit.SECONDS.sleep(SLEEP_SECONDS);
-				}
+			for(String stockId : stockIdArray) {
+				BigDecimal averageScope = new BigDecimal(DbUtil.getAverage(stockId , START_DATE , AVERAGE_TYPE)[1]);
+				if(averageScope.compareTo(BigDecimal.ZERO) <= 0) continue;
+				doTrain(stockId , START_DATE);
+				TimeUnit.SECONDS.sleep(SLEEP_SECONDS);
 			}
 		}finally {
 			NNFactory.stopUI();
 		}
+		
+		
+//		try {
+//			for(int i = 0 ; i < TEST_COUNT ; i++) {
+//				for(int j = STOCK_ID_START ; j <= STOCK_ID_COUNT ; j++) {
+//					String stockId = j + "";
+//					String currentStartDate = DbUtil.changeDate(stockId , START_DATE , i * SIGLE_TIME_LENGTH , true);
+//					
+//					/*
+//					 * 判断当前均线是否上涨
+//					 */
+//					BigDecimal averageScope = new BigDecimal(DbUtil.getAverage(stockId , currentStartDate , AVERAGE_TYPE)[1]);
+//					if(averageScope.compareTo(BigDecimal.ZERO) <= 0) continue;
+//					doTrain(stockId , currentStartDate);
+//					TimeUnit.SECONDS.sleep(SLEEP_SECONDS);
+//				}
+//			}
+//		}finally {
+//			NNFactory.stopUI();
+//		}
 	}
 	
 	
@@ -152,7 +169,7 @@ public class LSTMTrainer {
 				DataSet trainDataSet = trainDataSetIterator.next();
 				lstmNetwork.fit(trainDataSet);
 			}
-			trainDataSetIterator.reset();
+			
 			/*
 			 * 测试
 			 */
@@ -168,35 +185,37 @@ public class LSTMTrainer {
 	            eval.evalTimeSeries(labels , predicted);
 	            if(testCounter == TEST_DATA_SIZE - 1) break;
 			}
+			
+			trainDataSetIterator.reset();
 			testDataSetIterator.reset();
 			
-//			double currentF1 = eval.f1();
-//			if(currentF1 >= 0.5) {
-//				List<double[]> resultList = doPredicted(trainDataSetIterator , testDataSetIterator , lstmNetwork , normalizer);
-//				double[] realResult = resultList.get(0);
-//				double realMax = realResult[0];
-//				double realMin = realResult[1];
-//				double[] predictedResult = resultList.get(1);
-//				double predictedMax = predictedResult[0];
-//				double predictedMin = predictedResult[1];
-//				scoreMap.put(currentF1 , realMax + "," + realMin + "," + predictedMax + "," + predictedMin);
-//				
-//				System.err.println("currentF1 = " + currentF1 + "，maxDiff = " + (realMax - predictedMax) + "，minDiff = " + (realMin - predictedMin));
-//			}
+			double currentF1 = eval.f1();
+			if(currentF1 >= 0.5) {
+				List<double[]> resultList = doPredicted(trainDataSetIterator , testDataSetIterator , lstmNetwork , normalizer);
+				double[] realResult = resultList.get(0);
+				double realMax = realResult[0];
+				double realMin = realResult[1];
+				double[] predictedResult = resultList.get(1);
+				double predictedMax = predictedResult[0];
+				double predictedMin = predictedResult[1];
+				scoreMap.put(currentF1 , realMax + "," + realMin + "," + predictedMax + "," + predictedMin);
+				
+				System.err.println("currentF1 = " + currentF1 + "，maxDiff = " + (realMax - predictedMax) + "，minDiff = " + (realMin - predictedMin));
+			}
 		}
 		
-		Result result = null;
-		double currentF1 = eval.f1();
-		if(currentF1 >= 0.5) {
-			List<double[]> resultList = doPredicted(trainDataSetIterator , testDataSetIterator , lstmNetwork , normalizer);
-			double[] realResult = resultList.get(0);
-			double realMax = realResult[0];
-			double realMin = realResult[1];
-			double[] predictedResult = resultList.get(1);
-			double predictedMax = predictedResult[0];
-			double predictedMin = predictedResult[1];
-			System.err.println("currentF1 = " + currentF1 + "，maxDiff = " + (realMax - predictedMax) + "，minDiff = " + (realMin - predictedMin));
-		}
+//		Result result = null;
+//		double currentF1 = eval.f1();
+//		if(currentF1 >= 0.5) {
+//			List<double[]> resultList = doPredicted(trainDataSetIterator , testDataSetIterator , lstmNetwork , normalizer);
+//			double[] realResult = resultList.get(0);
+//			double realMax = realResult[0];
+//			double realMin = realResult[1];
+//			double[] predictedResult = resultList.get(1);
+//			double predictedMax = predictedResult[0];
+//			double predictedMin = predictedResult[1];
+//			System.err.println("currentF1 = " + currentF1 + "，maxDiff = " + (realMax - predictedMax) + "，minDiff = " + (realMin - predictedMin));
+//		}
 
 		
 		
@@ -204,26 +223,25 @@ public class LSTMTrainer {
 		/*
 		 * 按照F1分值对数据进行排序
 		 */
-//		Set<Double> keySet = scoreMap.keySet();
-//		Object[] keyArray = keySet.toArray();
-//		Arrays.sort(keyArray);
+		Set<Double> keySet = scoreMap.keySet();
+		Object[] keyArray = keySet.toArray();
+		Arrays.sort(keyArray);
 		
 //		for(Object key : keyArray) {
 //			Double keyDouble = Double.parseDouble(key.toString());
 //			System.err.println("key = " + keyDouble + "，value = " + scoreMap.get(key));
 //		}
 		
-//		Result result = new Result();
-//		Object key = keyArray[keyArray.length - 1];
-//		if(key != null) {
-//			Double f1 = Double.parseDouble(key.toString());
-//			String[] resultArray = scoreMap.get(f1).split(",");
-//			result.setRealMax(Double.parseDouble(resultArray[0]));
-//			result.setRealMin(Double.parseDouble(resultArray[1]));
-//			result.setPredictedMax(Double.parseDouble(resultArray[2]));
-//			result.setPredictedMin(Double.parseDouble(resultArray[3]));
-//			result.setF1(f1);
-//		}
+		Result result = new Result();
+		if(keyArray.length != 0) {
+			Double f1 = Double.parseDouble(keyArray[keyArray.length - 1].toString());
+			String[] resultArray = scoreMap.get(f1).split(",");
+			result.setRealMax(Double.parseDouble(resultArray[0]));
+			result.setRealMin(Double.parseDouble(resultArray[1]));
+			result.setPredictedMax(Double.parseDouble(resultArray[2]));
+			result.setPredictedMin(Double.parseDouble(resultArray[3]));
+			result.setF1(f1);
+		}
 		return result;
 	}
 	
