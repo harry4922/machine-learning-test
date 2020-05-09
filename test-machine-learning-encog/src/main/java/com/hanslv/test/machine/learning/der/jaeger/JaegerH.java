@@ -39,7 +39,7 @@ public class JaegerH {
 	
 	
 	private static final int AVERAGE_TYPE = 89;//均线类型
-	private static final BigDecimal AVERAGE_DIFF_RATE_LIMIT = new BigDecimal(0.05);
+	private static final BigDecimal AVERAGE_DIFF_RATE_LIMIT = new BigDecimal(0.01);
 	
 	
 	public static void main(String[] args) {
@@ -80,6 +80,7 @@ public class JaegerH {
 		 * 判断当前股票89均线是否上涨
 		 */
 		String[] averageInfo = DbUtil.getAverage(stockId , END_DATE , AVERAGE_TYPE);
+		if(averageInfo == null) return false;
 		if(new BigDecimal(averageInfo[1]).compareTo(BigDecimal.ZERO) <= 0) return false;
 		BigDecimal averagePrice = new BigDecimal(averageInfo[0]);
 		

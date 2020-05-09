@@ -1,6 +1,5 @@
 package com.hanslv.test.machine.learning.encog.util;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -611,7 +610,7 @@ public class DbUtil {
 			pstmt.setString(10 , endDate);
 			pstmt.setString(11 , stockId);
 			pstmt.setString(12 , endDate);
-			pstmt.setInt(13 , averageType + averageType/10);
+			pstmt.setInt(13 , averageType + 1);
 			try(ResultSet resultSet = pstmt.executeQuery()){
 				while(resultSet.next()) stockPriceInfoList.add(resultSet.getString(1));
 			}
@@ -622,14 +621,15 @@ public class DbUtil {
 		 */
 		BigDecimal currentTotal = new BigDecimal(0);
 		BigDecimal lastTotal = new BigDecimal(0);
-		for(int i = 0 ; i < stockPriceInfoList.size() - averageType/10 ; i++) currentTotal = currentTotal.add(new BigDecimal(stockPriceInfoList.get(i)));
-		for(int i = averageType/10 ; i < stockPriceInfoList.size() ; i++) lastTotal = lastTotal.add(new BigDecimal(stockPriceInfoList.get(i)));
-		BigDecimal current89Average = currentTotal.divide(new BigDecimal(averageType) , 2 , BigDecimal.ROUND_HALF_UP);
-		BigDecimal last89Average = lastTotal.divide(new BigDecimal(averageType) , 2 , BigDecimal.ROUND_HALF_UP);
+		if(stockPriceInfoList.size() != averageType + 1) return null;
+		for(int i = 0 ; i < averageType ; i++) currentTotal = currentTotal.add(new BigDecimal(stockPriceInfoList.get(i)));
+		for(int i = 1 ; i < stockPriceInfoList.size() ; i++) lastTotal = lastTotal.add(new BigDecimal(stockPriceInfoList.get(i)));
+		BigDecimal currentAverage = currentTotal.divide(new BigDecimal(averageType) , 2 , BigDecimal.ROUND_HALF_UP);
+		BigDecimal lastAverage = lastTotal.divide(new BigDecimal(averageType) , 2 , BigDecimal.ROUND_HALF_UP);
 		
-		BigDecimal slope = current89Average.subtract(last89Average);
+		BigDecimal slope = currentAverage.subtract(lastAverage).divide(currentAverage , 4 , BigDecimal.ROUND_HALF_UP);
 		
-		return new String[]{current89Average.toString() , slope.toString()};
+		return new String[]{currentAverage.toString() , slope.toString()};
 	}
 	
 	
