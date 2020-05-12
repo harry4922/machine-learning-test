@@ -14,7 +14,7 @@ public class JaegerL {
 	static final BigDecimal VR_LIMIT = new BigDecimal(70);//VR值需要小于当前值
 	static final int VR_DAY_COUNT = 26;//VR计算周期
 	static final int AVERAGE_DAY_COUNT = 89;//均线计算周期
-	static final String CURRENT_DATE = "2019-09-26";//当前日期
+	static final String CURRENT_DATE = "2020-05-08";//当前日期
 	static final int MAX_STOCK_ID = 3400;
 	
 	
