@@ -4,10 +4,16 @@ import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import com.hanslv.test.stock.analysis.dto.StockPriceDto;
+import com.hanslv.test.stock.analysis.dto.StockRiseAndFallCountMonthDto;
 
 /**
  * 从数据库获取指定数据
@@ -27,6 +33,537 @@ public class DbUtil {
 	static int index;//索引计数器
 	static BigDecimal maxBuffer;//最大值缓存
 	static BigDecimal minBuffer;//最小值缓存
+	
+	
+	
+	
+	
+	private static final String ID = "stock_id";
+	private static final String CODE = "stock_code";
+	private static final String NAME = "stock_name";
+	private static final String PRICE_DATE = "stock_price_date";
+	private static final String START_PRICE = "stock_price_start_price";
+	private static final String END_PRICE = "stock_price_end_price";
+	private static final String HIGHEST_PRICE = "stock_price_highest_price";
+	private static final String LOWEST_PRICE = "stock_price_lowest_price";
+	private static final String LAST_END_PRICE = "last_end_price";
+	private static final String RISE_RATE = "rise_rate";
+	
+	private static final String DO_SELECT_STOCK_PRICE_INFO_SQL = 
+					" SELECT "
+					+ " stockInfo.stock_id," 
+					+ " stockInfo.stock_code, "
+					+ " stockInfo.stock_name, "
+					+ " priceInfo.stock_price_date , "
+					+ " priceInfo.stock_price_start_price , "
+					+ " priceInfo.stock_price_end_price , "
+					+ " priceInfo.stock_price_highest_price , "
+					+ " priceInfo.stock_price_lowest_price "
+					+ " FROM tab_stock_info stockInfo LEFT JOIN tab_stock_price_shangzheng_0001 priceInfo ON stockInfo.stock_id = priceInfo.stock_id "
+					+ " WHERE priceInfo.stock_id = ? AND priceInfo.stock_price_date <= ?"
+					+ " UNION"
+					+ " SELECT "
+					+ " stockInfo.stock_id, "
+					+ " stockInfo.stock_code, "
+					+ " stockInfo.stock_name, "
+					+ " priceInfo.stock_price_date , "
+					+ " priceInfo.stock_price_start_price , "
+					+ " priceInfo.stock_price_end_price , "
+					+ " priceInfo.stock_price_highest_price , "
+					+ " priceInfo.stock_price_lowest_price "
+					+ " FROM tab_stock_info stockInfo LEFT JOIN tab_stock_price_shangzheng_0002 priceInfo ON stockInfo.stock_id = priceInfo.stock_id "
+					+ " WHERE priceInfo.stock_id = ? AND priceInfo.stock_price_date <= ?"
+					+ " UNION"
+					+ " SELECT "
+					+ " stockInfo.stock_id, "
+					+ " stockInfo.stock_code, "
+					+ " stockInfo.stock_name, "
+					+ " priceInfo.stock_price_date , "
+					+ " priceInfo.stock_price_start_price , "
+					+ " priceInfo.stock_price_end_price , "
+					+ " priceInfo.stock_price_highest_price , "
+					+ " priceInfo.stock_price_lowest_price"
+					+ " FROM tab_stock_info stockInfo LEFT JOIN tab_stock_price_shangzheng_0003 priceInfo ON stockInfo.stock_id = priceInfo.stock_id "
+					+ " WHERE priceInfo.stock_id = ? AND priceInfo.stock_price_date <= ?"
+					+ " UNION"
+					+ " SELECT"
+					+ " stockInfo.stock_id, "
+					+ " stockInfo.stock_code, "
+					+ " stockInfo.stock_name, "
+					+ " priceInfo.stock_price_date , "
+					+ " priceInfo.stock_price_start_price , "
+					+ " priceInfo.stock_price_end_price , "
+					+ " priceInfo.stock_price_highest_price , "
+					+ " priceInfo.stock_price_lowest_price"
+					+ " FROM tab_stock_info stockInfo LEFT JOIN tab_stock_price_shenzheng_0001 priceInfo ON stockInfo.stock_id = priceInfo.stock_id "
+					+ " WHERE priceInfo.stock_id = ? AND priceInfo.stock_price_date <= ?"
+					+ " UNION"
+					+ " SELECT"
+					+ " stockInfo.stock_id, "
+					+ " stockInfo.stock_code, "
+					+ " stockInfo.stock_name, "
+					+ " priceInfo.stock_price_date , "
+					+ " priceInfo.stock_price_start_price , "
+					+ " priceInfo.stock_price_end_price , "
+					+ " priceInfo.stock_price_highest_price , "
+					+ " priceInfo.stock_price_lowest_price"
+					+ " FROM tab_stock_info stockInfo LEFT JOIN tab_stock_price_shenzheng_0002 priceInfo ON stockInfo.stock_id = priceInfo.stock_id "
+					+ " WHERE priceInfo.stock_id = ? AND priceInfo.stock_price_date <= ?"
+					+ " UNION"
+					+ " SELECT"
+					+ " stockInfo.stock_id, "
+					+ " stockInfo.stock_code, "
+					+ " stockInfo.stock_name, "
+					+ " priceInfo.stock_price_date , "
+					+ " priceInfo.stock_price_start_price , "
+					+ " priceInfo.stock_price_end_price , "
+					+ " priceInfo.stock_price_highest_price , "
+					+ " priceInfo.stock_price_lowest_price"
+					+ " FROM tab_stock_info stockInfo LEFT JOIN tab_stock_price_shenzheng_0003 priceInfo ON stockInfo.stock_id = priceInfo.stock_id "
+					+ " WHERE priceInfo.stock_id = ? AND priceInfo.stock_price_date <= ?"
+					+ " ORDER BY stock_price_date DESC LIMIT ?";
+	private static final String DO_SELECT_STOCK_PRICE_INFO_BY_YEAR_SQL = 
+					" SELECT "
+					+ " stockInfo.stock_id," 
+					+ " stockInfo.stock_code, "
+					+ " stockInfo.stock_name, "
+					+ " priceInfo.stock_price_date , "
+					+ " priceInfo.stock_price_start_price , "
+					+ " priceInfo.stock_price_end_price , "
+					+ " priceInfo.stock_price_highest_price , "
+					+ " priceInfo.stock_price_lowest_price "
+					+ " FROM tab_stock_info stockInfo LEFT JOIN tab_stock_price_shangzheng_0001 priceInfo ON stockInfo.stock_id = priceInfo.stock_id "
+					+ " WHERE priceInfo.stock_id = ? AND date_format(priceInfo.stock_price_date, '%Y') = ?"
+					+ " UNION"
+					+ " SELECT "
+					+ " stockInfo.stock_id, "
+					+ " stockInfo.stock_code, "
+					+ " stockInfo.stock_name, "
+					+ " priceInfo.stock_price_date , "
+					+ " priceInfo.stock_price_start_price , "
+					+ " priceInfo.stock_price_end_price , "
+					+ " priceInfo.stock_price_highest_price , "
+					+ " priceInfo.stock_price_lowest_price "
+					+ " FROM tab_stock_info stockInfo LEFT JOIN tab_stock_price_shangzheng_0002 priceInfo ON stockInfo.stock_id = priceInfo.stock_id "
+					+ " WHERE priceInfo.stock_id = ? AND date_format(priceInfo.stock_price_date, '%Y') = ?"
+					+ " UNION"
+					+ " SELECT "
+					+ " stockInfo.stock_id, "
+					+ " stockInfo.stock_code, "
+					+ " stockInfo.stock_name, "
+					+ " priceInfo.stock_price_date , "
+					+ " priceInfo.stock_price_start_price , "
+					+ " priceInfo.stock_price_end_price , "
+					+ " priceInfo.stock_price_highest_price , "
+					+ " priceInfo.stock_price_lowest_price"
+					+ " FROM tab_stock_info stockInfo LEFT JOIN tab_stock_price_shangzheng_0003 priceInfo ON stockInfo.stock_id = priceInfo.stock_id "
+					+ " WHERE priceInfo.stock_id = ? AND date_format(priceInfo.stock_price_date, '%Y') = ?"
+					+ " UNION"
+					+ " SELECT"
+					+ " stockInfo.stock_id, "
+					+ " stockInfo.stock_code, "
+					+ " stockInfo.stock_name, "
+					+ " priceInfo.stock_price_date , "
+					+ " priceInfo.stock_price_start_price , "
+					+ " priceInfo.stock_price_end_price , "
+					+ " priceInfo.stock_price_highest_price , "
+					+ " priceInfo.stock_price_lowest_price"
+					+ " FROM tab_stock_info stockInfo LEFT JOIN tab_stock_price_shenzheng_0001 priceInfo ON stockInfo.stock_id = priceInfo.stock_id "
+					+ " WHERE priceInfo.stock_id = ? AND date_format(priceInfo.stock_price_date, '%Y') = ?"
+					+ " UNION"
+					+ " SELECT"
+					+ " stockInfo.stock_id, "
+					+ " stockInfo.stock_code, "
+					+ " stockInfo.stock_name, "
+					+ " priceInfo.stock_price_date , "
+					+ " priceInfo.stock_price_start_price , "
+					+ " priceInfo.stock_price_end_price , "
+					+ " priceInfo.stock_price_highest_price , "
+					+ " priceInfo.stock_price_lowest_price"
+					+ " FROM tab_stock_info stockInfo LEFT JOIN tab_stock_price_shenzheng_0002 priceInfo ON stockInfo.stock_id = priceInfo.stock_id "
+					+ " WHERE priceInfo.stock_id = ? AND date_format(priceInfo.stock_price_date, '%Y') = ?"
+					+ " UNION"
+					+ " SELECT"
+					+ " stockInfo.stock_id, "
+					+ " stockInfo.stock_code, "
+					+ " stockInfo.stock_name, "
+					+ " priceInfo.stock_price_date , "
+					+ " priceInfo.stock_price_start_price , "
+					+ " priceInfo.stock_price_end_price , "
+					+ " priceInfo.stock_price_highest_price , "
+					+ " priceInfo.stock_price_lowest_price"
+					+ " FROM tab_stock_info stockInfo LEFT JOIN tab_stock_price_shenzheng_0003 priceInfo ON stockInfo.stock_id = priceInfo.stock_id "
+					+ " WHERE priceInfo.stock_id = ? AND date_format(priceInfo.stock_price_date, '%Y') = ?"
+					+ " ORDER BY stock_price_date DESC ";
+			
+			
+	
+	
+	
+	//String stockId , int stepLong , String endDate , int rectangleLong , int singleBatchSize , boolean testOrNot
+	public static void main(String[] args) {
+//		for(String maxAndLowStr : getRectangleArea("463" , 2 , "2019-10-25" , 5 , 5 , false)) System.out.println(maxAndLowStr);
+//		for(String maxAndLowStr : getRectangleMaxAndLow("463" , 2 , "2019-10-25" , 5 , 5 , false)) System.out.println(maxAndLowStr);
+//		System.out.println(changeDate("1" , "2019-11-06" , 5 , false));
+//		System.out.println(getAverage("1" , "2019-12-20" , 89)[0]);
+//		for(String parsedMaxAndLow : parseMaxAndLow("1" , 5 , "2019-11-29" , 1 , 5 , true)) System.out.println(parsedMaxAndLow);
+//		for(String result : getInfo("1" , "2019-12-31" , 10))System.out.println(result);
+//		for(String result : jaegerBDataSource("1" , "2019-12-31" , 10)) System.out.println(result);
+//		for(String result : getRectangleArea("1" , 2 , "2019-06-21" , 5 , 5 , false)) System.out.println(result);
+		//String stockId , int stepLong , String endDate , int batchSize , int singleBatchSize , boolean testOrNot
+//		List<StockPriceDto> resultList = selectStockPriceInfo("1", "2020-07-06", 1000);
+//		List<StockPriceDto> resultList = selectStockPriceInfo("1" , "2019");
+//		resultList.forEach(System.out::println);
+//		System.out.println("2020-01-02".substring(5 , 7));
+//		System.out.println(new BigDecimal(-1).divide(new BigDecimal(2)).stripTrailingZeros().toPlainString());
+		List<String> yearList = new ArrayList<>();
+		yearList.add("2019");
+		yearList.add("2018");
+		yearList.add("2017");
+		yearList.add("2016");
+		Map<String , List<StockRiseAndFallCountMonthDto>> montCountMap = getStockRiseAndFallCountMonth("1", yearList);
+		montCountMap.forEach((key , value) -> {
+			System.out.println(key + "年统计-------------------");
+			System.out.println("月,上涨,下跌");
+			value.forEach(result -> {
+//				System.out.println(result.getMonth() + "月，上涨：" + result.getRiseCount() + "，下跌：" + result.getFallCount());
+//				System.out.println(result.getMonth() + "," + result.getRiseCount() + "," + result.getFallCount());
+				System.out.print(result.getFallCount() + ",");
+			});
+			System.out.println();
+		});
+	}
+	
+	/**
+	 * 获取股票价格信息
+	 * @param stockId
+	 * @param endDate
+	 * @param length
+	 * @return
+	 */
+	public static List<StockPriceDto> selectStockPriceInfo(String stockId , String endDate , Integer length){
+		List<Map<String , String>> rawResultList = doSelectStockPriceInfo(stockId, endDate, length);//获取股票信息
+		return selectStockPriceSub(rawResultList);
+	}
+	
+	/**
+	 * 按照年份获取股票价格信息
+	 * @param stockId
+	 * @param year
+	 * @return
+	 */
+	public static List<StockPriceDto> selectStockPriceInfo(String stockId , String year){
+		List<Map<String , String>> rawResultList = doSelectStockPriceInfoYear(stockId, year);
+		return selectStockPriceSub(rawResultList);
+	}
+	
+	
+	/**
+	 * 获取指定年份中每个月上涨、下跌股票数量
+	 * @param yearList
+	 * @return
+	 */
+	public static Map<String , List<StockRiseAndFallCountMonthDto>> getStockRiseAndFallCountMonth(String stockId , List<String> yearList){
+		Map<String , List<StockRiseAndFallCountMonthDto>> stockRiseCountResultMap = new HashMap<>();
+		//根据年份获取每个月股票上涨、下跌数量
+		yearList.forEach(year -> {
+			List<StockRiseAndFallCountMonthDto> yearCountList = doGetStockRiseAndFallCountMonth(stockId, year);
+			stockRiseCountResultMap.put(year, yearCountList);
+		});
+		return stockRiseCountResultMap;
+	}
+	
+	/**
+	 * 获取全部股票指定年份每月上涨、下跌统计
+	 * @param yearList
+	 * @return
+	 */
+	public static Map<String , List<StockRiseAndFallCountMonthDto>> getStockRiseAndFallCountMonth(List<String> yearList){
+		Map<String , List<StockRiseAndFallCountMonthDto>> stockRiseCountResultMap = new HashMap<>();
+		return stockRiseCountResultMap;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/**
+	 * 获取股票价格信息
+	 * @param stockId
+	 * @param endDate
+	 * @param length
+	 * @return
+	 */
+	private static List<Map<String , String>> doSelectStockPriceInfo(String stockId , String endDate , Integer length){
+		List<Map<String , String>> stockPriceInfoList = new ArrayList<>();
+		try(PreparedStatement pstmt = JdbcUtil.getJdbcConnection().prepareStatement(DO_SELECT_STOCK_PRICE_INFO_SQL);){
+			initSqlParam(pstmt, stockId, endDate, length);//初始化查询参数
+			try(ResultSet searchResult = pstmt.executeQuery();){
+				stockPriceInfoList = getStockPrice(searchResult);//获取结果List
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}finally {
+			JdbcUtil.closeJdbcConnection();
+		}
+		return stockPriceInfoList;
+	}
+	/**
+	 * 初始化SQL查询参数
+	 * @param pstmt
+	 * @param stockId
+	 * @param endDate
+	 * @param length
+	 * @throws SQLException 
+	 */
+	private static void initSqlParam(PreparedStatement pstmt , String stockId , String endDate , Integer length) throws SQLException {
+		pstmt.setString(1, stockId);
+		pstmt.setString(2, endDate);
+		pstmt.setString(3, stockId);
+		pstmt.setString(4, endDate);
+		pstmt.setString(5, stockId);
+		pstmt.setString(6, endDate);
+		pstmt.setString(7, stockId);
+		pstmt.setString(8, endDate);
+		pstmt.setString(9, stockId);
+		pstmt.setString(10, endDate);
+		pstmt.setString(11, stockId);
+		pstmt.setString(12, endDate);
+		pstmt.setInt(13, length);
+	}
+	
+	/**
+	 * 按照年份获取股票价格信息
+	 * @param stockId
+	 * @param year
+	 * @return
+	 */
+	private static List<Map<String , String>> doSelectStockPriceInfoYear(String stockId , String year){
+		List<Map<String , String>> searchResultList = new ArrayList<>();
+		try(PreparedStatement pstmt = JdbcUtil.getJdbcConnection().prepareStatement(DO_SELECT_STOCK_PRICE_INFO_BY_YEAR_SQL);){
+			initSqlParam4Year(pstmt, stockId, year);//初始化查询参数
+			try(ResultSet searchResult = pstmt.executeQuery();){
+				searchResultList = getStockPrice(searchResult);//获取结果List
+			}
+		}catch(SQLException e) {
+			e.printStackTrace();
+		}finally {
+			JdbcUtil.closeJdbcConnection();
+		}
+		return searchResultList;
+	}
+	
+	/**
+	 * 初始化根据年份获取股票价格信息的Preparestatement
+	 * @param stockId
+	 * @param year
+	 * @throws SQLException 
+	 */
+	private static void initSqlParam4Year(PreparedStatement pstmt, String stockId , String year) throws SQLException {
+		pstmt.setString(1, stockId);
+		pstmt.setString(2, year);
+		pstmt.setString(3, stockId);
+		pstmt.setString(4, year);
+		pstmt.setString(5, stockId);
+		pstmt.setString(6, year);
+		pstmt.setString(7, stockId);
+		pstmt.setString(8, year);
+		pstmt.setString(9, stockId);
+		pstmt.setString(10, year);
+		pstmt.setString(11, stockId);
+		pstmt.setString(12, year);
+	}
+	
+	
+	/**
+	 * 获取股票信息，获取涨幅、转换实体部分
+	 * @param rawResultList
+	 * @return
+	 */
+	private static List<StockPriceDto> selectStockPriceSub(List<Map<String , String>> rawResultList){
+		riseRateCount(rawResultList);//计算当前涨幅
+		List<StockPriceDto> resultList = parseToObj(rawResultList);//转换为实体
+		return resultList;
+	}
+
+
+	/**
+	 * 将ResultMap转换为Map
+	 * @param searchResult
+	 * @return
+	 * @throws SQLException 
+	 */
+	private static List<Map<String , String>> getStockPrice(ResultSet searchResult) throws SQLException{
+		List<Map<String , String>> resultList = new ArrayList<>();
+		ResultSetMetaData metaData = searchResult.getMetaData();
+		int columnCount = metaData.getColumnCount();//列数量
+		String[] columnNames = new String[columnCount];//列名称数组
+		for(int i = 0 ; i < columnCount ; i++) columnNames[i] = metaData.getColumnName(i+1);
+		while(searchResult.next()) {
+			Map<String , String> resultMap = new HashMap<>();
+			for(int i = 0 ; i < columnCount ; i++) resultMap.put(columnNames[i] , searchResult.getString(i + 1));
+			resultList.add(resultMap);
+		}
+		return resultList;
+	} 
+	/**
+	 * 计算当日涨幅
+	 * @param stockPriceInfoList
+	 */
+	private static void riseRateCount(List<Map<String , String>> stockPriceInfoList) {
+		BigDecimal lastEndPrice = null;
+		Collections.reverse(stockPriceInfoList);//转换顺序，便于获取上一交易日收盘价
+		for(Map<String , String> priceInfo : stockPriceInfoList) {
+			BigDecimal currentEndPrice = parseToBigDecimal((priceInfo.get("stock_price_end_price")));
+			if(lastEndPrice != null && currentEndPrice != null){
+				BigDecimal diff = currentEndPrice.subtract(lastEndPrice);
+				BigDecimal riseRate = diff.divide(lastEndPrice , 2 , BigDecimal.ROUND_HALF_UP);
+				priceInfo.put(RISE_RATE , riseRate.stripTrailingZeros().toPlainString());
+				priceInfo.put(LAST_END_PRICE , lastEndPrice.stripTrailingZeros().toPlainString());
+			}
+			lastEndPrice = currentEndPrice;
+		}
+		Collections.reverse(stockPriceInfoList);//顺序还原
+	}
+	/**
+	 * 转换为实体对象
+	 * @param rawResultList
+	 * @return
+	 */
+	private static List<StockPriceDto> parseToObj(List<Map<String , String>> rawResultList){
+		List<StockPriceDto> objList = new ArrayList<>();
+		rawResultList.forEach(rawResult -> {
+			String stockId = rawResult.get(ID);
+			String stockName = rawResult.get(NAME);
+			String stockCode = rawResult.get(CODE);
+			String currentDate = rawResult.get(PRICE_DATE);
+			String startPrice = rawResult.get(START_PRICE);
+			String endPrice = rawResult.get(END_PRICE);
+			String lowestPrice = rawResult.get(LOWEST_PRICE);
+			String highestPrice = rawResult.get(HIGHEST_PRICE);
+			String lastDayEndPrice = rawResult.get(LAST_END_PRICE);
+			String riseRate = rawResult.get(RISE_RATE);
+			
+			StockPriceDto obj = new StockPriceDto();
+			obj.setStockId(stockId);
+			obj.setStockName(stockName);
+			obj.setStockCode(stockCode);
+			obj.setCurrentDate(currentDate);
+			obj.setStartPrice(parseToBigDecimal(startPrice));
+			obj.setEndPrice(parseToBigDecimal(endPrice));
+			obj.setLowestPrice(parseToBigDecimal(lowestPrice));
+			obj.setHighestPrice(parseToBigDecimal(highestPrice));
+			obj.setLastDayEndPrice(parseToBigDecimal(lastDayEndPrice));
+			obj.setRiseRate(riseRate);
+			objList.add(obj);
+		});
+		return objList;
+	}
+	
+	/**
+	 * 查询当年上涨、下跌股票数量
+	 * @param stockId
+	 * @param year
+	 * @return
+	 */
+	private static List<StockRiseAndFallCountMonthDto> doGetStockRiseAndFallCountMonth(String stockId, String year) {
+		List<StockPriceDto> currentYearStockPriceList = selectStockPriceInfo(stockId, year);//获取当年股票价格信息
+		Map<String , StockRiseAndFallCountMonthDto> monthMap = initMonthMap(year);//月份Map
+		doRiseAndFallCount(monthMap, currentYearStockPriceList);//计算当前年份涨跌
+		List<StockRiseAndFallCountMonthDto> resultList = parseCountMapToList(monthMap);//转换为List
+		return resultList;
+	}
+	
+	/**
+	 * 初始化月份Map
+	 * @param year
+	 * @return
+	 */
+	private static Map<String , StockRiseAndFallCountMonthDto> initMonthMap(String year){
+		Map<String , StockRiseAndFallCountMonthDto> monthMap = new HashMap<>();
+		for(int i = 1 ; i <= 12 ; i++) {
+			StockRiseAndFallCountMonthDto monthData = new StockRiseAndFallCountMonthDto();
+			monthData.setFallCount(0);
+			monthData.setRiseCount(0);
+			monthData.setYear(year);
+			monthData.setMonth(i + "");
+			monthMap.put(i + "" , monthData);
+		}
+		return monthMap;
+	}
+	
+	/**
+	 * 计算上涨股票数量和下跌股票数量
+	 * @param monthMap
+	 * @param currentYearStockPriceList
+	 */
+	private static void doRiseAndFallCount(Map<String , StockRiseAndFallCountMonthDto> monthMap , List<StockPriceDto> currentYearStockPriceList) {
+		currentYearStockPriceList.forEach(stockPrice -> {
+			BigDecimal riseRate = parseToBigDecimal(stockPrice.getRiseRate());
+			String dateStr = stockPrice.getCurrentDate();
+			if(dateStr != null) {
+				String month = dateStr.substring(5 , 7);
+				StockRiseAndFallCountMonthDto currentMonthCount = monthMap.get(Integer.parseInt(month) + "");
+				if(riseRate != null) {
+					if(riseRate.compareTo(BigDecimal.ZERO) > 0) currentMonthCount.setRiseCount(currentMonthCount.getRiseCount() + 1);
+					else if(riseRate.compareTo(BigDecimal.ZERO) < 0) currentMonthCount.setFallCount(currentMonthCount.getFallCount() + 1);
+				}
+			}
+		});
+	}
+	/**
+	 * 将Map转换为List并排序，升序
+	 * @param monthMap
+	 * @return
+	 */
+	private static List<StockRiseAndFallCountMonthDto> parseCountMapToList(Map<String , StockRiseAndFallCountMonthDto> monthMap){
+		List<StockRiseAndFallCountMonthDto> resultList = new ArrayList<>();
+		monthMap.forEach((key , value) -> {
+			resultList.add(value);
+		});
+		Collections.sort(resultList, (data1 , data2) -> {
+			String monthA = data1.getMonth();
+			String monthB = data2.getMonth();
+			return Integer.parseInt(monthA) - Integer.parseInt(monthB);
+		});
+		return resultList;
+	}
+
+	/**
+	 * 将字符串转换为BigDecimal
+	 * @param value
+	 * @return
+	 */
+	private static BigDecimal parseToBigDecimal(String value) {
+		return value == null ? null : new BigDecimal(value);
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	/**
@@ -1062,31 +1599,5 @@ public class DbUtil {
 		}catch(SQLException e) {e.printStackTrace();}finally {JdbcUtil.closeJdbcConnection();}
 		sort.deleteCharAt(sort.length() - 1);
 		return sort.toString();
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	//String stockId , int stepLong , String endDate , int rectangleLong , int singleBatchSize , boolean testOrNot
-	public static void main(String[] args) {
-//		for(String maxAndLowStr : getRectangleArea("463" , 2 , "2019-10-25" , 5 , 5 , false)) System.out.println(maxAndLowStr);
-//		for(String maxAndLowStr : getRectangleMaxAndLow("463" , 2 , "2019-10-25" , 5 , 5 , false)) System.out.println(maxAndLowStr);
-//		System.out.println(changeDate("1" , "2019-11-06" , 5 , false));
-//		System.out.println(getAverage("1" , "2019-12-20" , 89)[0]);
-//		for(String parsedMaxAndLow : parseMaxAndLow("1" , 5 , "2019-11-29" , 1 , 5 , true)) System.out.println(parsedMaxAndLow);
-//		for(String result : getInfo("1" , "2019-12-31" , 10))System.out.println(result);
-//		for(String result : jaegerBDataSource("1" , "2019-12-31" , 10)) System.out.println(result);
-		for(String result : getRectangleArea("1" , 2 , "2019-06-21" , 5 , 5 , false)) System.out.println(result);
-		//String stockId , int stepLong , String endDate , int batchSize , int singleBatchSize , boolean testOrNot
 	}
 }
